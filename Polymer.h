@@ -14,9 +14,11 @@ public:
     int length; //Length used to know how many monomers are in the polymer
     int family; //Family needed to identify which family of monomers are in the polymer
 
-    Polymer * separatePolymer(int lower_index);
-
-    void joinPolymers(Polymer * other_polymer);
+    Polymer(int ind, int len, int fam){
+        index=ind;
+        length=len;
+        family=fam;
+    }
 
     bool operator==(Polymer p);
 };

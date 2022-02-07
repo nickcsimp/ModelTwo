@@ -17,8 +17,6 @@ public:
         polymer_one = p_one;
         polymer_two = p_two;
     }
-
-
 };
 
 

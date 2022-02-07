@@ -500,9 +500,9 @@ vector<Polymer *> Conglomerate::getTree(Polymer * p, vector<Polymer *> connected
             //Find which polymer is new
             int new_polymer = -1;
             if(*polymer_connections[ind][i][0]->polymers_in_connection[0] == *p){
-                new_polymer == 1;
+                new_polymer = 1;
             } else {
-                new_polymer == 0;
+                new_polymer = 0;
             }
 
             //Need to see if polymer has already been investigated
@@ -548,15 +548,85 @@ void Conglomerate::chooseTailBinding(int chosen_bond){
 //Join polymers
 //Update connections
 //Update conglomerate
-void Conglomerate::chooseNeighboursBind(int chosen_bond){
-    //Join and separate in the (Un)connectedNeighbours????
-    //TODO: these last two functions. The rest should be done.
-    
+//Return removed polymer to remove from the system
+Polymer * Conglomerate::chooseNeighboursBind(int chosen_bond){
+    //Get polymers for easy access
+    Polymer * polymer_being_extended = unconnected_neighbours_list[chosen_bond]->polymer_one;
+    Polymer * polymer_to_be_removed = unconnected_neighbours_list[chosen_bond]->polymer_two;
+
+    //Extend polymer being extended
+    polymer_being_extended->length = polymer_being_extended->length + polymer_to_be_removed->length;
+
+    //Find polymer_to_be_removed in conglomerate
+    int ptbr_index = -1;
+    for(int i=0; i<polymers.size(); i++){
+        if(*polymers[i] == *polymer_to_be_removed){
+            ptbr_index = i;
+            break;
+        }
+    }
+
+    //Transfer connections
+    for(int i=0; i<polymer_connections[ptbr_index].size(); i++){
+        for(auto & con : polymer_connections[ptbr_index][i]){
+            for(int j=0; j<2; j++){
+                if(*con->polymers_in_connection[j] == *polymer_to_be_removed){
+                    //Any connection involving removed polymer needs to be changed to the extended polymer
+                    con->polymers_in_connection[j] = polymer_being_extended;
+                }
+            }
+        }
+    }
+
+    //Remove polymer
+    polymers.erase(polymers.begin()+ptbr_index);
+    //Update conglomerate
+    updateConglomerate();
+
+    return polymer_to_be_removed;
 }
 
-//Separate polymers
-//Update connections
-//Update conglomerate
-void Conglomerate::chooseNeighboursUnbind(int chosen_bond){
+//Return new polymer to add to the system
+Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
+    //Get polymer for easy access
+    Polymer * polymer_being_separated = connected_neighbours_list[chosen_bond]->polymer;
 
+
+    //We make a new polymer
+    //It will be the same family as polymer being separated
+    //TODO make sure the index gets sorted out
+    //Index starts from 0 and is the smaller of the two in the interaction
+    //Therefore the con_neighbour switching a polymer length 8 into a 2 and 6 will have index 1
+    //This polymer has length 6=8-1-1
+    Polymer * new_polymer = new Polymer(-1, polymer_being_separated->length - polymer_being_separated->index -1, polymer_being_separated->family);
+
+    //Shorten polymer being separated
+    //The polymer being separated keeps its head, so it has a length index+1 (1+1=2)
+    polymer_being_separated->length = connected_neighbours_list[chosen_bond]->index + 1;
+
+    //Find polymer_being_separated in conglomerate
+    int pbs_index = -1;
+    for(int i=0; i<polymers.size(); i++){
+        if(*polymers[i] == *polymer_being_separated){
+            pbs_index = i;
+            break;
+        }
+    }
+
+    //Transfer connections
+    for(int i=0; i<polymer_connections[pbs_index].size(); i++){
+        for(auto & con : polymer_connections[pbs_index][i]){
+            for(int j=0; j<2; j++){
+                if(*con->polymers_in_connection[j] == *polymer_being_separated && con->indexes[j]>connected_neighbours_list[chosen_bond]->index){
+                    //Any connection involving separated polymer above the index of separation needs to be transferred
+                    con->polymers_in_connection[j] = new_polymer;
+                }
+            }
+        }
+    }
+
+    //Update conglomerate
+    updateConglomerate();
+
+    return new_polymer;
 }

@@ -74,8 +74,8 @@ public:
     vector<Polymer *> getTree(Polymer * p, vector<Polymer *> connected_polymers);
     void chooseHeadBinding(int chosen_bond);
     void chooseTailBinding(int chosen_bond);
-    void chooseNeighboursBind(int chosen_bond);
-    void chooseNeighboursUnbind(int chosen_bond);
+    Polymer * chooseNeighboursBind(int chosen_bond);
+    Polymer * chooseNeighboursUnbind(int chosen_bond);
 
 };
 
