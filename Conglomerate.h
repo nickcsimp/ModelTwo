@@ -32,7 +32,7 @@ public:
     vector<vector<vector<Connection *>>> polymer_connections; //polymer<monomer<connection>>
 
     //Holds the free sites of each family
-    vector<vector<FreeSite *>> available_free_sites_list;
+    vector<vector<FreeSite *>> available_free_sites_list; //family<free site list>
 
     //Holds the head copy-template connections that can break
     vector<Connection *> head_unbinding_list;
@@ -67,7 +67,7 @@ public:
     void updateNeighboursUnbindingList();
 
     //Choose Transitions
-    void chooseSite();
+    void chooseSite(int family, int site);
     vector<Conglomerate *> chooseHeadUnbinding(int chosen_bond);
     vector<Conglomerate *> chooseTailUnbinding(int chosen_bond);
     vector<Conglomerate *> checkSeparation(Connection * removed_connection);

@@ -322,13 +322,12 @@ void Conglomerate::updateNeighboursUnbindingList(){
     }
 }
 
-void Conglomerate::chooseSite(){
+void Conglomerate::chooseSite(int family, int site){
 
 }
 
 //Remove chosen bond from connection list
 //Update conglomerate
-//Todo: remember to add new conglomerate to system
 vector<Conglomerate *> Conglomerate::chooseHeadUnbinding(int chosen_bond){
     vector<Conglomerate *> output;
     //Find which connection is to be removed
@@ -347,6 +346,10 @@ vector<Conglomerate *> Conglomerate::chooseHeadUnbinding(int chosen_bond){
 
     //Update conglomerate
     updateConglomerate();
+
+    if(!output.empty()){
+        output[0]->updateConglomerate();
+    }
 
     return output;
 }
@@ -372,6 +375,10 @@ vector<Conglomerate *> Conglomerate::chooseTailUnbinding(int chosen_bond){
     //Update conglomerate
     updateConglomerate();
 
+    if(!output.empty()){
+        output[0]->updateConglomerate();
+    }
+
     return output;
 }
 
@@ -395,6 +402,8 @@ vector<Conglomerate *> Conglomerate::checkSeparation(Connection * removed_connec
         polymers.erase(polymers.begin()+removed_poly);
 
         output.push_back(new Conglomerate(removed_connection->polymers_in_connection[1]));
+
+        return output;
     }
 
     //If there are still connections, we need to see if the conglom has separated
@@ -594,7 +603,6 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
 
     //We make a new polymer
     //It will be the same family as polymer being separated
-    //TODO make sure the index gets sorted out
     //Index starts from 0 and is the smaller of the two in the interaction
     //Therefore the con_neighbour switching a polymer length 8 into a 2 and 6 will have index 1
     //This polymer has length 6=8-1-1
@@ -625,6 +633,8 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
         }
     }
 
+    //Add to conglomerate
+    polymers.push_back(new_polymer);
     //Update conglomerate
     updateConglomerate();
 
