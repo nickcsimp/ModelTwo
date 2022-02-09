@@ -62,6 +62,7 @@ void Conglomerate::updatePolymersInConglomerate(){
                     vector<vector<Connection *>> vect(con->polymers_in_connection[i]->length, vecto);
                     //Add connection to the correct monomer
                     vect[con->indexes[i]].push_back(con);
+                    //Length 1, index 1
                     polymer_connections.push_back(vect);
                 }
             }
@@ -168,13 +169,13 @@ void Conglomerate::checkBindingValidity(int polymer, int monomer, int direction)
     //If the vector is empty there is no connection and therefore there can be no zipping
     if (!polymer_connections[polymer][monomer + direction].empty()) {
         //Need to know which polymer is which in the connection
-
         int connected_polymer;
-        if (*polymer_connections[polymer][monomer + direction][1]->polymers_in_connection[0] == *polymers[polymer]) {
+        if (*polymer_connections[polymer][monomer + direction][0]->polymers_in_connection[0] == *polymers[polymer]) {
             connected_polymer = 1;
         } else {
             connected_polymer = 0;
         }
+
 
         //Check if there is a tail on the connected polymer
         bool is_tail = false;
@@ -275,8 +276,7 @@ void Conglomerate::updateNeighboursBindingList(){
                         neighbour = 0;
                     }
 
-                    Polymer * neighbour_polymer = polymer_connections[con_pol_ind][polymers[con_pol_ind]->length-1][0]->polymers_in_connection[neighbour];
-
+                    Polymer * neighbour_polymer = polymer_connections[con_pol_ind][polymer_connections[pol][0][0]->indexes[connected_polymer+1]][0]->polymers_in_connection[neighbour];
                     //Now if the neighbour is connected with its final monomer, then we have neighbours!!!!
                     if(polymer_connections[con_pol_ind][polymer_connections[pol][0][0]->indexes[connected_polymer+1]][0]->indexes[neighbour] == neighbour_polymer->length-1){
                         unconnected_neighbours_list.push_back(new UnconnectedNeighbours(neighbour_polymer, polymers[pol]));
@@ -322,8 +322,15 @@ void Conglomerate::updateNeighboursUnbindingList(){
     }
 }
 
-void Conglomerate::chooseSite(int family, int site){
-
+void Conglomerate::addConnection(Conglomerate * conglomerate_being_joined, Connection * new_connection){
+    //Add the new connection
+    connections.push_back(new_connection);
+    //Add all connections from the other conglomerate
+    for(auto & con : conglomerate_being_joined->connections){
+        connections.push_back(con);
+    }
+    //update this conglomerate
+    updateConglomerate();
 }
 
 //Remove chosen bond from connection list
@@ -347,8 +354,10 @@ vector<Conglomerate *> Conglomerate::chooseHeadUnbinding(int chosen_bond){
     //Update conglomerate
     updateConglomerate();
 
+
     if(!output.empty()){
         output[0]->updateConglomerate();
+
     }
 
     return output;
@@ -374,7 +383,6 @@ vector<Conglomerate *> Conglomerate::chooseTailUnbinding(int chosen_bond){
 
     //Update conglomerate
     updateConglomerate();
-
     if(!output.empty()){
         output[0]->updateConglomerate();
     }
@@ -440,7 +448,6 @@ vector<Conglomerate *> Conglomerate::checkSeparation(Connection * removed_connec
         //Remove the connections from the polymer_connections list
         polymer_connections[p_one_index][removed_connection->indexes[0]].clear();
         polymer_connections[p_two_index][removed_connection->indexes[1]].clear();
-
 
         //Find the tree for one of the polymers
         vector<Polymer *> empty_vector;
@@ -600,17 +607,16 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
     //Get polymer for easy access
     Polymer * polymer_being_separated = connected_neighbours_list[chosen_bond]->polymer;
 
-
     //We make a new polymer
     //It will be the same family as polymer being separated
     //Index starts from 0 and is the smaller of the two in the interaction
     //Therefore the con_neighbour switching a polymer length 8 into a 2 and 6 will have index 1
     //This polymer has length 6=8-1-1
-    Polymer * new_polymer = new Polymer(-1, polymer_being_separated->length - polymer_being_separated->index -1, polymer_being_separated->family);
-
+    Polymer * new_polymer = new Polymer(-1, polymer_being_separated->length - connected_neighbours_list[chosen_bond]->index -1, polymer_being_separated->family);
     //Shorten polymer being separated
     //The polymer being separated keeps its head, so it has a length index+1 (1+1=2)
     polymer_being_separated->length = connected_neighbours_list[chosen_bond]->index + 1;
+
 
     //Find polymer_being_separated in conglomerate
     int pbs_index = -1;
@@ -621,6 +627,7 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
         }
     }
 
+
     //Transfer connections
     for(int i=0; i<polymer_connections[pbs_index].size(); i++){
         for(auto & con : polymer_connections[pbs_index][i]){
@@ -628,15 +635,19 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
                 if(*con->polymers_in_connection[j] == *polymer_being_separated && con->indexes[j]>connected_neighbours_list[chosen_bond]->index){
                     //Any connection involving separated polymer above the index of separation needs to be transferred
                     con->polymers_in_connection[j] = new_polymer;
+                    con->indexes[j] = con->indexes[j] - connected_neighbours_list[chosen_bond]->index - 1;
                 }
             }
         }
     }
 
+
     //Add to conglomerate
     polymers.push_back(new_polymer);
     //Update conglomerate
     updateConglomerate();
-
     return new_polymer;
 }
+
+//TODO: keep debugging - figure out why different things happen each time?
+//Why is the polymer index and length going mad?

@@ -67,7 +67,7 @@ public:
     void updateNeighboursUnbindingList();
 
     //Choose Transitions
-    void chooseSite(int family, int site);
+    void addConnection(Conglomerate * conglomerate_being_joined, Connection * new_connection);
     vector<Conglomerate *> chooseHeadUnbinding(int chosen_bond);
     vector<Conglomerate *> chooseTailUnbinding(int chosen_bond);
     vector<Conglomerate *> checkSeparation(Connection * removed_connection);

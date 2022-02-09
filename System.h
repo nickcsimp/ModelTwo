@@ -29,7 +29,7 @@ public:
      * 4 = neighbours unbind
      * 5 = neighbours bind
      */
-    vector<double> transition_rates;
+    vector<double> transition_rates; //transition<total_rate>
     vector<vector<int>> conglomerate_rates; //transition<conglomerate<number of bonds>>
     vector<int> total_connections; //transition<total number of bonds>
 
@@ -40,10 +40,14 @@ public:
     double G_gen;//Generic bond forming free energy
     double M_eff;//Effective concentration of monomers in zipping
 
+
+    System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Polymer * template_polymer);
+
     void updateRates(int cong);
     void chooseTransition(double seed);
     void mergeConglomerates();
-
+    void removeConglomerate(int cong);
+    void addConglomerate(Conglomerate * new_cong);
 
 
 };
