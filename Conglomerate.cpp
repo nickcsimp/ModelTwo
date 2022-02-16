@@ -18,11 +18,17 @@ Conglomerate::Conglomerate(Polymer * pol){
 
 //Calls all update functions
 void Conglomerate::updateConglomerate() {
+    cout << "Polymers" << endl;
     updatePolymersInConglomerate();
+    cout << "Free Sites" << endl;
     updateAvailableFreeSites();
+    cout << "Unbinding" << endl;
     updateUnbindingLists();
+    cout << "Binding" << endl;
     updateBindingLists();
+    cout << "NBinding" << endl;
     updateNeighboursBindingList();
+    cout << "NUnbinding" << endl;
     updateNeighboursUnbindingList();
 }
 
@@ -31,6 +37,7 @@ void Conglomerate::updateConglomerate() {
 //Then find the connections on the polymer
 void Conglomerate::updatePolymersInConglomerate(){
     if(connections.size()==0){
+        cout << "No Connections" << endl;
         //Check for errors
         if(polymers.size()!=1){
             cout << "ERROR: no connections in conglomerate but polymer count does not equal one." << endl;
@@ -38,16 +45,21 @@ void Conglomerate::updatePolymersInConglomerate(){
         }
         //Initialise polymer_connections
         polymer_connections.clear();
+
         vector<Connection *> vecto; //Empty vector
         //Create a vector of empty vectors of the same size as the polymer
         vector<vector<Connection *>> vect(polymers[0]->length, vecto);
         polymer_connections.push_back(vect);
     } else {
+        cout << "Connections" << endl;
         polymers.clear(); //Clear the lists
         polymer_connections.clear();
-
+        cout << "Vectors Cleared" << endl;
         for(auto & con : connections){ //Loop all connections
+            cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
+            cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl;
             for(int i=0; i<2; i++){ //Loop the polymers
+                cout << endl << "Checking Polymer: " << con->polymers_in_connection[i]->index << endl;
                 bool in_list = false; //Used to determine if the polymer is already in the list
                 for(int j=0; j<polymers.size(); j++){ //Loop all polymers in the list
                     if(*polymers[j] == *con->polymers_in_connection[i]){ //If the polymer is already in the list:
@@ -348,17 +360,10 @@ vector<Conglomerate *> Conglomerate::chooseHeadUnbinding(int chosen_bond){
     }
     //Remove connection
     connections.erase(connections.begin()+connection_index);
-
+    //Create new conglomerate if needed
     output = checkSeparation(head_unbinding_list[chosen_bond]);
-
     //Update conglomerate
     updateConglomerate();
-
-
-    if(!output.empty()){
-        output[0]->updateConglomerate();
-
-    }
 
     return output;
 }
@@ -383,9 +388,6 @@ vector<Conglomerate *> Conglomerate::chooseTailUnbinding(int chosen_bond){
 
     //Update conglomerate
     updateConglomerate();
-    if(!output.empty()){
-        output[0]->updateConglomerate();
-    }
 
     return output;
 }

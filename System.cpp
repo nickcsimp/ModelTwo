@@ -280,6 +280,7 @@ void System::chooseTransition(double seed){
             cout << "Depolymerisation" << endl;
             //Bind some unconnected neighbours
             Polymer * removed_polymer = conglomerates[chosen_conglomerate]->chooseNeighboursBind(chosen_bond);
+            delete removed_polymer;
         }
         updateRates(chosen_conglomerate);
     }
@@ -287,6 +288,7 @@ void System::chooseTransition(double seed){
 }
 
 void System::removeConglomerate(int cong){
+    delete conglomerates[cong];
     conglomerates.erase(conglomerates.begin()+cong);
 
     total_rate = 0;

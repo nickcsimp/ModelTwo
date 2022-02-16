@@ -6,8 +6,8 @@
 using namespace std;
 
 int main() {
-    cout << "Hello, World!" << std::endl;
 
+    cout << "Hello, World!" << std::endl;
     double seed = 200;
     mt19937 gen(seed);
 
@@ -40,6 +40,7 @@ int main() {
         system->chooseTransition(gen());
         count ++;
     }
+
 
     return 0;
 }
