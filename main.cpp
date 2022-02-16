@@ -2,19 +2,19 @@
 #include <random>
 #include "Polymer.h"
 #include "System.h"
+#include "Tests.h"
 
 using namespace std;
 
 int main() {
 
-    cout << "Hello, World!" << std::endl;
     double seed = 200;
     mt19937 gen(seed);
 
     //Initialisations
     double k = 1;//Polymerisation rate
-    double k0 = 2;//Binding rate
-    double G_bb = 10;//Backbone forming free energy
+    double k0 = 1;//Binding rate
+    double G_bb = 1;//Backbone forming free energy
     double G_spec = 1;//Specific bond forming free energy
     double G_gen = 1;//Generic bond forming free energy
     double M_eff = 100;//Effective concentration of monomers in zipping
@@ -37,10 +37,13 @@ int main() {
     int transition_limit = 10000;
 
     while(count<transition_limit){
+        cout << "--------" << endl;
+        cout << count << endl;
+        cout << "--------" << endl;
         system->chooseTransition(gen());
         count ++;
     }
 
-
+    delete system;
     return 0;
 }
