@@ -16,6 +16,8 @@ public:
     bool testConglomerateUpdate();
     bool testConglomerateAddConnection();
     bool testConglomerate();
+    bool testMiddleTailUnbinding();
+    bool testEndTailUnbinding();
 };
 
 

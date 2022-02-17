@@ -96,14 +96,19 @@ void Conglomerate::updateAvailableFreeSites(){
 //Finds all head connections
 //Finds all tail connections that can unzip
 void Conglomerate::updateUnbindingLists(){
+    //TODO tail unbinding list is wrong
     tail_unbinding_list.clear();
     head_unbinding_list.clear();
+
+    //Loop Connections, find valid unbinding
     for(auto & con : connections){
 
         if(con->indexes[0] == 0 || con->indexes[1] == 0){ //If either are 0, then the connection is a head
             head_unbinding_list.push_back(con); //Add connection to list
         } else if(con->indexes[0] == con->polymers_in_connection[0]->length-1 || con->indexes[1] == con->polymers_in_connection[1]->length-1){
             //End of tail, definitely tail unbinding
+            tail_unbinding_list.push_back(con); //Add connection to list
+
         } else {
             //Need to check if it is in the middle of a zip or able to be zipped
 
@@ -116,6 +121,7 @@ void Conglomerate::updateUnbindingLists(){
                     break;
                 }
             }
+
             bool middle_connection = true;
             //If the connection is surrounded by connections to the same polymers, then no unzipping can occur
             for(int i=-1; i<2; i+=2){ //Looking at the previous(-1) and the next (+1)
@@ -125,14 +131,12 @@ void Conglomerate::updateUnbindingLists(){
                 }
 
                 //If the first neighbour is not the same as either polymer then it's not central
-                if(!(*polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[0] == *con->polymers_in_connection[0])
-                        || !(*polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[0] == *con->polymers_in_connection[1])){
+                if(!(*polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[0] == *con->polymers_in_connection[0] || *polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[0] == *con->polymers_in_connection[1])){
                     middle_connection = false;
                     break;
                 }
                 //If the second neighbour is not the same as either polymer then it's not central
-                if(!(*polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[1] == *con->polymers_in_connection[0])
-                   || !(*polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[1] == *con->polymers_in_connection[1])){
+                if(!(*polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[1] == *con->polymers_in_connection[0] || *polymer_connections[polymer_one][con->indexes[0]+i][0]->polymers_in_connection[1] == *con->polymers_in_connection[1])){
                     middle_connection = false;
                     break;
                 }

@@ -55,6 +55,7 @@ System::System(vector<double> rates, vector<double> energies, vector<int> free_m
         addConglomerate(new_cong);
     }
 
+
 }
 
 
@@ -128,6 +129,7 @@ void System::updateRates(int cong){
 
 
 void System::chooseTransition(double seed){
+        //TODO mildly worried that i have forgotten a break? Make sure sites are being chosen fairly
     mt19937 gen(seed);
 
     //First choose a transition
@@ -138,9 +140,15 @@ void System::chooseTransition(double seed){
 
     if((current_rate/total_rate)>=(random_number_transition/mt19937::max())){
         cout << "External" << endl;
-
         //external transition chosen
         //We need to find two conglomerates: the first will be family 0, the second family 1
+
+        //If either family has just one free site, we need to make sure that it is picked
+        //Family 0 will be chosen automatically first so just need to check family 1
+        if(total_external_sites[1]==1){
+            //We need the chosen_conglomerate_one to be the conglomerate with the one external site
+
+        }
 
         double random_number_conglomerate_zero = gen();
         double current_conglomerate = 0;
@@ -154,20 +162,15 @@ void System::chooseTransition(double seed){
                 break;
             }
         }
+        cout << "Total external Sites [0]: " << total_external_sites[0] << endl;
+        cout << "Total external Sites [1]: " << total_external_sites[1] << endl;
 
-        cout << "total_external_sites[0] = " << total_external_sites[0] << endl;
-        cout << "external_sites[0][chosen_rviue] = " << external_sites[0][chosen_conglomerate_zero] << endl;
-        cout << "total_external_sites[1] = " << total_external_sites[1] << endl;
-        cout << "external_sites[1][chosen_rviue] = " << external_sites[1][chosen_conglomerate_zero] << endl;
-        //TODO -1 total sites!! Please sort out :)
+
         //Remove chosen cong zero from total list
         total_external_sites[1] = total_external_sites[1] - external_sites[1][chosen_conglomerate_zero];
         double random_number_conglomerate_one = gen();
         current_conglomerate = 0;
         int chosen_conglomerate_one = -1;
-
-        cout << "total_external_sites[1] = " << total_external_sites[1] << endl;
-        cout << "random ratio = " << random_number_conglomerate_one/mt19937::max() << endl;
 
         for(int cong_one = 0; cong_one < conglomerates.size(); cong_one ++){
             if(cong_one != chosen_conglomerate_zero) {
@@ -180,10 +183,19 @@ void System::chooseTransition(double seed){
                 }
             }
         }
+        total_external_sites[1] = total_external_sites[1] + external_sites[1][chosen_conglomerate_zero];
+
+        cout << "External sites [0] in chosen cong zero: " << external_sites[0][chosen_conglomerate_zero] << endl;
+        cout << "External sites [1] in chosen cong one: " << external_sites[1][chosen_conglomerate_one] << endl;
+
+        cout << "External sites [1] in chosen cong zero: " << external_sites[1][chosen_conglomerate_zero] << endl;
+        cout << "External sites [0] in chosen cong one: " << external_sites[0][chosen_conglomerate_one] << endl;
+
+        cout << "Chosen conglomerate zero: " << chosen_conglomerate_zero << " Index: " << conglomerates[chosen_conglomerate_zero]->index << endl;
+        cout << "Chosen conglomerate one: " << chosen_conglomerate_one << " Index: " << conglomerates[chosen_conglomerate_one]->index << endl;
 
 
-
-        //We need to find which sites we are going to
+        //We need to find which sites we are going to use
         double random_number_site_zero = gen();
         int chosen_site_zero = -1;
 
@@ -194,8 +206,9 @@ void System::chooseTransition(double seed){
                 break;
             }
         }
+        cout << "Chosen site zero: " << chosen_site_zero << endl;
 
-        //We need to find which sites we are going to
+        //We need to find which sites we are going to use
         double random_number_site_one = gen();
         int chosen_site_one = -1;
 
@@ -206,33 +219,7 @@ void System::chooseTransition(double seed){
                 break;
             }
         }
-
-        cout << endl << "Conglomerate: " << conglomerates[chosen_conglomerate_zero]->index << endl;
-        cout << "Connections:" << endl;
-        for(auto & con:conglomerates[chosen_conglomerate_zero]->connections){
-            cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-            cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-        }
-        cout << "Polymers:" << endl;
-        for(auto & con:conglomerates[chosen_conglomerate_zero]->polymers){
-            cout << "Polymer: " << con->index << " Length: " << con->length << endl << endl;
-        }
-
-        cout << "Chosen Conglomerate One: " << chosen_conglomerate_one << endl;
-        cout << endl << "Conglomerate: " << conglomerates[chosen_conglomerate_one]->index << endl;
-        cout << "Connections:" << endl;
-        for(auto & con:conglomerates[chosen_conglomerate_one]->connections){
-            cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-            cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-        }
-        cout << "Polymers:" << endl;
-        for(auto & con:conglomerates[chosen_conglomerate_one]->polymers){
-            cout << "Polymer: " << con->index << " Length: " << con->length << endl << endl;
-        }
-
-        cout << "Connection:" << endl;
-        cout << "Polymer: " << conglomerates[chosen_conglomerate_zero]->available_free_sites_list[0][chosen_site_zero]->polymer->index << " Index: " << conglomerates[chosen_conglomerate_zero]->available_free_sites_list[0][chosen_site_zero]->index << endl;
-        cout << "Polymer: " << conglomerates[chosen_conglomerate_one]->available_free_sites_list[1][chosen_site_one]->polymer->index << " Index: " << conglomerates[chosen_conglomerate_one]->available_free_sites_list[1][chosen_site_one]->index << endl;
+        cout << "Chosen site one: " << chosen_site_one << endl;
 
         //Make new connection between the two sites
         FreeSite * free_site_zero = conglomerates[chosen_conglomerate_zero]->available_free_sites_list[0][chosen_site_zero];
@@ -282,16 +269,6 @@ void System::chooseTransition(double seed){
 
         if(chosen_transition == 0){
             cout << "Head Unbinding" << endl;
-            cout << endl << "Conglomerate: " << conglomerates[chosen_conglomerate]->index << endl;
-            cout << "Connections:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->connections){
-                cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-                cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-            }
-            cout << "Polymers:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->polymers){
-                cout << "Polymer: " << con->index << " Length: " << con->length << endl << endl;
-            }
             //Head unbinding
             vector<Conglomerate *> output = conglomerates[chosen_conglomerate]->chooseHeadUnbinding(chosen_bond);
             if(!output.empty()){
@@ -301,21 +278,7 @@ void System::chooseTransition(double seed){
             }
         } else if (chosen_transition == 1) {
             cout << "Head Binding" << endl;
-            // Head binding
-            cout << endl << "Conglomerate: " << conglomerates[chosen_conglomerate]->index << endl;
-            cout << "Connections:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->connections){
-                cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-                cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-            }
-            cout << "Polymers:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->polymers){
-                cout << "Polymer: " << con->index << " Length: " << con->length << endl << endl;
-            }
-
-            cout << "Chosen Bond" << endl;
-            cout << "Polymer: " << conglomerates[chosen_conglomerate]->head_binding_list[chosen_bond]->polymers_in_connection[0]->index << " Index: " <<  conglomerates[chosen_conglomerate]->head_binding_list[chosen_bond]->indexes[0] << endl;
-            cout << "Polymer: " << conglomerates[chosen_conglomerate]->head_binding_list[chosen_bond]->polymers_in_connection[1]->index << " Index: " <<  conglomerates[chosen_conglomerate]->head_binding_list[chosen_bond]->indexes[01] << endl;
+            //Head Binding
             conglomerates[chosen_conglomerate]->chooseHeadBinding(chosen_bond);
         } else if (chosen_transition == 2) {
             cout << "Tail Unbinding" << endl;
@@ -333,39 +296,12 @@ void System::chooseTransition(double seed){
             conglomerates[chosen_conglomerate]->chooseTailBinding(chosen_bond);
         } else if (chosen_transition == 4) {
             cout << "Depolymerisation" << endl;
-            cout << endl << "Conglomerate: " << conglomerates[chosen_conglomerate]->index << endl;
-            cout << "Connections:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->connections){
-                cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-                cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-            }
-            cout << "Polymers:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->polymers){
-                cout << "Polymer: " << con->index << " Length: " << con->length << endl << endl;
-            }
-            cout << "Chosen bond: " << endl;
-            cout << "Polymer: " << conglomerates[chosen_conglomerate]->connected_neighbours_list[chosen_bond]->polymer->index << endl;
-            cout << "Index: " << conglomerates[chosen_conglomerate]->connected_neighbours_list[chosen_bond]->index << endl;
             // Unbind some connected neighbours
 
             Polymer * new_polymer = conglomerates[chosen_conglomerate]->chooseNeighboursUnbind(chosen_bond);
             new_polymer->index = ++polymer_index;
         } else if(chosen_transition == 5){
             cout << "Polymerisation" << endl;
-            cout << endl << "Conglomerate: " << conglomerates[chosen_conglomerate]->index << endl;
-            cout << "Connections:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->connections){
-                cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-                cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-            }
-            cout << "Polymers:" << endl;
-            for(auto & con:conglomerates[chosen_conglomerate]->polymers){
-                cout << "Polymer: " << con->index << " Length: " << con->length << endl << endl;
-            }
-            cout << "Chosen bond: " << endl;
-            cout << "Polymer One: " << conglomerates[chosen_conglomerate]->unconnected_neighbours_list[chosen_bond]->polymer_one->index << endl;
-            cout << "Polymer Two: " << conglomerates[chosen_conglomerate]->unconnected_neighbours_list[chosen_bond]->polymer_two->index << endl;
-
             //Bind some unconnected neighbours
             Polymer * removed_polymer = conglomerates[chosen_conglomerate]->chooseNeighboursBind(chosen_bond);
             delete removed_polymer;
@@ -434,7 +370,6 @@ void System::removeConglomerate(int cong){
 void System::addConglomerate(Conglomerate * new_cong){
 
     conglomerates.push_back(new_cong);
-    cout << "New Conglomerate! " << new_cong->index << endl;
 
     int cong = conglomerates.size()-1;
 

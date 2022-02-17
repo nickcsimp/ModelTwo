@@ -19,6 +19,14 @@ void Tests::run(){
         cout << "Error: Test conglomerate" << endl;
     }
 
+    if(!testMiddleTailUnbinding()){
+        cout << "Error: Test middle tail unbinding" << endl;
+    }
+
+    if(!testEndTailUnbinding()) {
+        cout << "Error: Test End Tail Unbinding()" << endl;
+    }
+
 
 }
 
@@ -505,5 +513,192 @@ bool Tests::testConglomerate() {
     delete p_three;
     delete con_one;
     delete con_two;
+    return !failed;
+}
+
+bool Tests::testMiddleTailUnbinding(){
+    Polymer* p_one = new Polymer(1, 6, 0);
+    Polymer* p_two = new Polymer(2, 6, 1);
+
+    Connection * con_one = new Connection(p_one, 0, p_two, 5);
+    Connection * con_two = new Connection(p_one, 1, p_two, 4);
+    Connection * con_three = new Connection(p_one, 2, p_two, 3);
+    Connection * con_four = new Connection(p_one, 3, p_two, 2);
+    Connection * con_five = new Connection(p_one, 4, p_two, 1);
+    Connection * con_six = new Connection(p_one, 5, p_two, 0);
+
+    vector<Connection *> connections;
+    connections.push_back(con_one);
+    connections.push_back(con_two);
+    connections.push_back(con_three);
+    connections.push_back(con_four);
+    connections.push_back(con_five);
+    connections.push_back(con_six);
+
+    Conglomerate * conglomerate = new Conglomerate(connections);
+
+    bool failed = false;
+
+    if(conglomerate->polymers.size()!=2){
+        cout << 1 << endl;
+        failed = true;
+    }
+
+    if(!(*conglomerate->polymers[0] == *p_one) || !(*conglomerate->polymers[1] == *p_two) ){
+        cout << 2 << endl;
+        failed = true;
+    }
+
+    if(conglomerate->polymer_connections[0].size()!=6 || conglomerate->polymer_connections[1].size()!=6){
+        cout << 3 << endl;
+        failed = true;
+    }
+
+    for(int i=0; i<6; i++){
+        if(conglomerate->polymer_connections[0][i].empty() || conglomerate->polymer_connections[1][i].empty()){
+            cout << 4 << endl;
+            failed = true;
+        }
+    }
+
+    if(conglomerate->available_free_sites_list.size()!=2){
+        cout << 6 << endl;
+        failed = true;
+    }
+    if(!conglomerate->available_free_sites_list[0].empty()){
+        cout << 7 << endl;
+        failed = true;
+    }
+    if(!conglomerate->available_free_sites_list[1].empty()){
+        cout << 8 << endl;
+        failed = true;
+    }
+    if(conglomerate->head_unbinding_list.size()!=2){
+        cout << 9 << endl;
+        failed = true;
+    }
+    if(!conglomerate->head_binding_list.empty() || !conglomerate->tail_binding_list.empty() || !conglomerate->tail_unbinding_list.empty()){
+        cout << 10 << endl;
+        cout << "Head binding size " << conglomerate->head_binding_list.size() << endl;
+        cout << "Tail binding size " << conglomerate->tail_binding_list.size() << endl;
+        cout << "Tail unbinding size " << conglomerate->tail_unbinding_list.size() << endl;
+        failed = true;
+    }
+    if(conglomerate->connected_neighbours_list.size()!=10){
+        cout << 11 << endl;
+        failed = true;
+    }
+    if(!conglomerate->unconnected_neighbours_list.empty()){
+        cout << 12 << endl;
+        failed = true;
+    }
+
+    delete conglomerate;
+    delete p_one;
+    delete p_two;
+    delete con_one;
+    delete con_two;
+    delete con_three;
+    delete con_four;
+    delete con_five;
+    delete con_six;
+    return !failed;
+}
+
+
+bool Tests::testEndTailUnbinding(){
+    Polymer* p_one = new Polymer(1, 6, 0);
+    Polymer* p_two = new Polymer(2, 5, 1);
+
+    Connection * con_two = new Connection(p_one, 1, p_two, 4);
+    Connection * con_three = new Connection(p_one, 2, p_two, 3);
+    Connection * con_four = new Connection(p_one, 3, p_two, 2);
+    Connection * con_five = new Connection(p_one, 4, p_two, 1);
+    Connection * con_six = new Connection(p_one, 5, p_two, 0);
+
+    vector<Connection *> connections;
+    connections.push_back(con_two);
+    connections.push_back(con_three);
+    connections.push_back(con_four);
+    connections.push_back(con_five);
+    connections.push_back(con_six);
+
+    Conglomerate * conglomerate = new Conglomerate(connections);
+
+    bool failed = false;
+
+    if(conglomerate->polymers.size()!=2){
+        cout << 1 << endl;
+        failed = true;
+    }
+
+    if(!(*conglomerate->polymers[0] == *p_one) || !(*conglomerate->polymers[1] == *p_two) ){
+        cout << 2 << endl;
+        failed = true;
+    }
+
+    if(conglomerate->polymer_connections[0].size()!=6 || conglomerate->polymer_connections[1].size()!=5){
+        cout << 3 << endl;
+        failed = true;
+    }
+
+    for(int i=1; i<6; i++){
+        if(conglomerate->polymer_connections[0][i].empty()){
+            cout << 4 << endl;
+            failed = true;
+        }
+    }
+    for(int i=0; i<5; i++){
+        if(conglomerate->polymer_connections[1][i].empty()){
+            cout << 4.2 << endl;
+            failed = true;
+        }
+    }
+    if(!conglomerate->polymer_connections[0][0].empty()){
+        cout << 4 << endl;
+        failed = true;
+    }
+
+    if(conglomerate->available_free_sites_list.size()!=2){
+        cout << 6 << endl;
+        failed = true;
+    }
+    if(conglomerate->available_free_sites_list[0].size() != 1){
+        cout << 7 << endl;
+        failed = true;
+    }
+    if(!conglomerate->available_free_sites_list[1].empty()){
+        cout << 8 << endl;
+        failed = true;
+    }
+    if(conglomerate->head_unbinding_list.size()!=1){
+        cout << 9 << endl;
+        failed = true;
+    }
+    if(!conglomerate->head_binding_list.empty() || !conglomerate->tail_binding_list.empty()){
+        cout << 10 << endl;
+        failed = true;
+    }
+    if(conglomerate->tail_unbinding_list.size()!=1){
+        cout << 10.5 << endl;
+        failed = true;
+    }
+    if(conglomerate->connected_neighbours_list.size()!=8){
+        cout << 11 << endl;
+        failed = true;
+    }
+    if(!conglomerate->unconnected_neighbours_list.empty()){
+        cout << 12 << endl;
+        failed = true;
+    }
+
+    delete conglomerate;
+    delete p_one;
+    delete p_two;
+    delete con_two;
+    delete con_three;
+    delete con_four;
+    delete con_five;
+    delete con_six;
     return !failed;
 }
