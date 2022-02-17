@@ -40,11 +40,10 @@ int main() {
     int transition_limit = 100000;
 
     while(count<transition_limit){
-        cout << endl << "-----------------------------" << endl;
         system->chooseTransition(gen());
         count ++;
     }
-
+/*
     for(auto & cong : system->conglomerates){
         cout << endl << "Conglomerate: " << cong->index << endl;
         cout << "Polymers:" << endl;
@@ -56,7 +55,7 @@ int main() {
             cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
             cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
         }
-    }
+    }*/
 
     delete system;
     return 0;
