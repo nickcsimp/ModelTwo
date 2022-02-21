@@ -62,6 +62,15 @@ System::System(vector<double> rates, vector<double> energies, vector<int> free_m
 void System::updateRates(int cong){
     total_rate = 0;
 
+    //Remove ext rate from chosen conglomerate
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
+        }
+    }
+
+    //Update external rates
     total_external_sites[0] = total_external_sites[0] - external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] - external_sites[1][cong];
     external_sites[0][cong] = conglomerates[cong]->available_free_sites_list[0].size();
@@ -69,16 +78,13 @@ void System::updateRates(int cong){
     total_external_sites[0] = total_external_sites[0] + external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] + external_sites[1][cong];
 
-    //TODO: is there a better way to update this rather than starting from nought
-    external_connection_rate = 0;
-    //For every conglomerate, we look at the number of family 0 free sites
-    //These can bind with any other conglomerate's family 1 free sites
-    //Therefore two loops to cover entire system
-    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates looking at family 0
-        for(int j=0; j<conglomerates.size(); j++) { //Loop conglomerates looking at family 1
-            if(i!=j){ //Conglomerate can't bind within itself here
-                external_connection_rate = external_connection_rate + external_sites[0][i]*external_sites[1][j]*k0;
-            }
+
+
+    //Add new to total
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate + external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate + external_sites[1][i] * external_sites[0][cong] * k0;
         }
     }
     total_rate = total_rate + external_connection_rate;
@@ -129,7 +135,6 @@ void System::updateRates(int cong){
 
 
 void System::chooseTransition(double seed){
-        //TODO mildly worried that i have forgotten a break? Make sure sites are being chosen fairly
     mt19937 gen(seed);
 
     //First choose a transition
@@ -197,7 +202,6 @@ void System::chooseTransition(double seed){
         int chosen_site_zero = -1;
 
         for(int site_zero = 1; site_zero <= external_sites[first][chosen_conglomerate_zero]; site_zero ++){
-
             if((site_zero/external_sites[first][chosen_conglomerate_zero])>=(random_number_site_zero/mt19937::max())){
                 chosen_site_zero = site_zero - 1;
                 break;
@@ -209,7 +213,6 @@ void System::chooseTransition(double seed){
         int chosen_site_one = -1;
 
         for(int site_one = 1; site_one <= external_sites[second][chosen_conglomerate_one]; site_one ++){
-
             if((site_one/external_sites[second][chosen_conglomerate_one])>=(random_number_site_one/mt19937::max())){
                 chosen_site_one = site_one - 1;
                 break;
@@ -306,24 +309,19 @@ void System::removeConglomerate(int cong){
 
     total_rate = 0;
 
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
+        }
+    }
+    total_rate = total_rate + external_connection_rate;
+
     total_external_sites[0] = total_external_sites[0] - external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] - external_sites[1][cong];
     external_sites[0].erase(external_sites[0].begin()+cong);
     external_sites[1].erase(external_sites[1].begin()+cong);
 
-    //TODO: is there a better way to update this rather than starting from nought
-    external_connection_rate = 0;
-    //For every conglomerate, we look at the number of family 0 free sites
-    //These can bind with any other conglomerate's family 1 free sites
-    //Therefore two loops to cover entire system
-    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates looking at family 0
-        for(int j=0; j<conglomerates.size(); j++) { //Loop conglomerates looking at family 1
-            if(i!=j){ //Conglomerate can't bind within itself here
-                external_connection_rate = external_connection_rate + external_sites[0][i]*external_sites[1][j]*k0;
-            }
-        }
-    }
-    total_rate = total_rate + external_connection_rate;
 
     transition_rates[0] = transition_rates[0] - conglomerate_rates[0][cong]*(k0*exp(G_spec+G_gen));
     total_connections[0] = total_connections[0] - conglomerate_rates[0][cong];
@@ -369,16 +367,10 @@ void System::addConglomerate(Conglomerate * new_cong){
     total_external_sites[0] = total_external_sites[0] + external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] + external_sites[1][cong];
 
-    //TODO: is there a better way to update this rather than starting from nought
-    external_connection_rate = 0;
-    //For every conglomerate, we look at the number of family 0 free sites
-    //These can bind with any other conglomerate's family 1 free sites
-    //Therefore two loops to cover entire system
-    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates looking at family 0
-        for(int j=0; j<conglomerates.size(); j++) { //Loop conglomerates looking at family 1
-            if(i!=j){ //Conglomerate can't bind within itself here
-                external_connection_rate = external_connection_rate + external_sites[0][i]*external_sites[1][j]*k0;
-            }
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate + external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate + external_sites[1][i] * external_sites[0][cong] * k0;
         }
     }
     total_rate = total_rate + external_connection_rate;
