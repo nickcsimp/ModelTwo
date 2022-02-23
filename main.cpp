@@ -36,12 +36,9 @@ int main() {
     int template_length = 6;
 
     Polymer * template_polymer = new Polymer(-1, template_length, 0);
-
     System * system = new System(rates, energies, free_monomers, template_polymer);
-
     int count = 0;
-    int transition_limit = 10000;
-
+    int transition_limit = 2406;
     while(count<transition_limit){
         system->chooseTransition(gen());
         count ++;

@@ -69,7 +69,6 @@ void System::updateRates(int cong){
             external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
         }
     }
-
     //Update external rates
     total_external_sites[0] = total_external_sites[0] - external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] - external_sites[1][cong];
@@ -88,7 +87,6 @@ void System::updateRates(int cong){
         }
     }
     total_rate = total_rate + external_connection_rate;
-
     transition_rates[0] = transition_rates[0] - conglomerate_rates[0][cong]*(k0*exp(G_spec+G_gen));
     total_connections[0] = total_connections[0] - conglomerate_rates[0][cong];
     conglomerate_rates[0][cong] = conglomerates[cong]->head_unbinding_list.size();
@@ -135,6 +133,7 @@ void System::updateRates(int cong){
 
 
 void System::chooseTransition(double seed){
+
     mt19937 gen(seed);
 
     //First choose a transition
@@ -142,7 +141,6 @@ void System::chooseTransition(double seed){
 
     double random_number_transition = gen();
     double current_rate = external_connection_rate;
-
     if((current_rate/total_rate)>=(random_number_transition/mt19937::max())){
         //external transition chosen
         //We need to find two conglomerates: the first will be family 0, the second family 1
@@ -168,7 +166,6 @@ void System::chooseTransition(double seed){
         double random_number_conglomerate_zero = gen();
         double current_conglomerate = 0;
         int chosen_conglomerate_zero = -1;
-
         for(int cong_zero = 0; cong_zero < conglomerates.size(); cong_zero ++){
             current_conglomerate = current_conglomerate + external_sites[first][cong_zero];
 
@@ -211,7 +208,7 @@ void System::chooseTransition(double seed){
         //We need to find which sites we are going to use
         double random_number_site_one = gen();
         int chosen_site_one = -1;
-
+        //TODO site zero is definitely tending toward the final free position on the polymer
         for(int site_one = 1; site_one <= external_sites[second][chosen_conglomerate_one]; site_one ++){
             if((site_one/external_sites[second][chosen_conglomerate_one])>=(random_number_site_one/mt19937::max())){
                 chosen_site_one = site_one - 1;
@@ -233,6 +230,8 @@ void System::chooseTransition(double seed){
         //Remove conglomerate one from the system
         removeConglomerate(chosen_conglomerate_one);
         //Now all lists have one less thing and the total rates should have been updated
+
+        //TODO: error with 10000 monomers and template length 6 transition number 2406
     } else {
         int chosen_transition =-1;
         for(int transition=0; transition<=transition_rates.size(); transition++){
@@ -308,7 +307,6 @@ void System::removeConglomerate(int cong){
     conglomerates.erase(conglomerates.begin()+cong);
 
     total_rate = 0;
-
     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
         if (i != cong) { //Conglomerate can't bind within itself here
             external_connection_rate = external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
