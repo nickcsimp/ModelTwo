@@ -1,0 +1,1 @@
+g++ -std=c++11 -o sim main.cpp Conglomerate.cpp Conglomerate.h Connection.cpp Connection.h Polymer.cpp Polymer.h FreeSite.cpp FreeSite.h UnconnectedNeighbours.cpp UnconnectedNeighbours.h ConnectedNeighbours.cpp ConnectedNeighbours.h System.cpp System.h Tests.cpp Tests.h
