@@ -60,7 +60,7 @@ int main() {
         }
     }*/
 
-    ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
+    ofstream fw("./conformations.txt", ofstream::out);
 
     if(fw.is_open()){
         //Creating all the nodes and joining polymers
