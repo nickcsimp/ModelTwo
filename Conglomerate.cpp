@@ -688,6 +688,3 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
     updateConglomerate();
     return new_polymer;
 }
-
-//TODO: keep debugging - figure out why different things happen each time?
-//Why is the polymer index and length going mad?
