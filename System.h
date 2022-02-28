@@ -45,7 +45,6 @@ public:
 
     void updateRates(int cong);
     void chooseTransition(double seed);
-    void mergeConglomerates();
     void removeConglomerate(int cong);
     void addConglomerate(Conglomerate * new_cong);
 

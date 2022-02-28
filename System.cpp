@@ -143,14 +143,19 @@ void System::chooseTransition(double seed){
     double random_number_transition = gen();
     double current_rate = external_connection_rate;
 
+    int chosen_conglomerate_zero = -1;
+    int chosen_conglomerate_one = -1;
+    int chosen_site_zero = -1;
+    int chosen_site_one = -1;
+    int first = 0;
+    int second = 1;
+
     if((current_rate/total_rate)>=(random_number_transition/mt19937::max())){
         //external transition chosen
         //We need to find two conglomerates: the first will be family 0, the second family 1
 
         //If either family has just one free site, we need to make sure that it is picked
         //Family 0 will be chosen automatically first so just need to check family 1
-        int first = 0;
-        int second = 1;
 
         int family_one_has_sites_in_this_many_conglomerates = 0;
         for(int i=0; i<external_sites[1].size(); i++){
@@ -167,7 +172,6 @@ void System::chooseTransition(double seed){
 
         double random_number_conglomerate_zero = gen();
         double current_conglomerate = 0;
-        int chosen_conglomerate_zero = -1;
 
         for(int cong_zero = 0; cong_zero < conglomerates.size(); cong_zero ++){
             current_conglomerate = current_conglomerate + external_sites[first][cong_zero];
@@ -182,7 +186,6 @@ void System::chooseTransition(double seed){
         total_external_sites[second] = total_external_sites[second] - external_sites[second][chosen_conglomerate_zero];
         double random_number_conglomerate_one = gen();
         current_conglomerate = 0;
-        int chosen_conglomerate_one = -1;
 
         for(int cong_one = 0; cong_one < conglomerates.size(); cong_one ++){
             if(cong_one != chosen_conglomerate_zero) {
@@ -199,7 +202,6 @@ void System::chooseTransition(double seed){
 
         //We need to find which sites we are going to use
         double random_number_site_zero = gen();
-        int chosen_site_zero = -1;
 
         for(int site_zero = 1; site_zero <= external_sites[first][chosen_conglomerate_zero]; site_zero ++){
             if((site_zero/external_sites[first][chosen_conglomerate_zero])>=(random_number_site_zero/mt19937::max())){
@@ -210,7 +212,6 @@ void System::chooseTransition(double seed){
 
         //We need to find which sites we are going to use
         double random_number_site_one = gen();
-        int chosen_site_one = -1;
 
         for(int site_one = 1; site_one <= external_sites[second][chosen_conglomerate_one]; site_one ++){
             if((site_one/external_sites[second][chosen_conglomerate_one])>=(random_number_site_one/mt19937::max())){
@@ -304,17 +305,16 @@ void System::chooseTransition(double seed){
 }
 
 void System::removeConglomerate(int cong){
-    delete conglomerates[cong];
-    conglomerates.erase(conglomerates.begin()+cong);
-
     total_rate = 0;
-
     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
         if (i != cong) { //Conglomerate can't bind within itself here
             external_connection_rate = external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
             external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
         }
     }
+    delete conglomerates[cong];
+    conglomerates.erase(conglomerates.begin()+cong);
+
     total_rate = total_rate + external_connection_rate;
 
     total_external_sites[0] = total_external_sites[0] - external_sites[0][cong];

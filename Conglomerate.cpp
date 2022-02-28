@@ -47,7 +47,7 @@ void Conglomerate::updatePolymersInConglomerate(){
         polymers.clear(); //Clear the lists
         polymer_connections.clear();
         for(auto & con : connections){ //Loop all connections
-            for(int i=0; i<2; i++){ //Loop the polymers
+            for(int i=0; i<2; i++){ //Loop the polymers in connection
                 bool in_list = false; //Used to determine if the polymer is already in the list
                 for(int j=0; j<polymers.size(); j++){ //Loop all polymers in the list
                     if(*polymers[j] == *con->polymers_in_connection[i]){ //If the polymer is already in the list:

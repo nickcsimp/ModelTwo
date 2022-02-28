@@ -1,6 +1,5 @@
 #include <iostream>
 #include <random>
-#include <iostream>
 #include <string>
 #include <fstream>
 #include "Polymer.h"
@@ -28,7 +27,7 @@ int main() {
     vector<double> rates({k, k0});
     vector<double> energies({G_bb, G_spec, G_gen, M_eff});
 
-    int monomers_family_zero = 1000;
+    int monomers_family_zero = 0;
     int monomers_family_one = 1000;
 
     vector<int> free_monomers({monomers_family_zero, monomers_family_one});
@@ -60,7 +59,7 @@ int main() {
         }
     }*/
 
-    ofstream fw("./conformations.txt", ofstream::out);
+    ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/Images", ofstream::out);
 
     if(fw.is_open()){
         //Creating all the nodes and joining polymers
