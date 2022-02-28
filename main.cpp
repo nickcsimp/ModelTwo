@@ -28,33 +28,20 @@ int main() {
     vector<double> energies({G_bb, G_spec, G_gen, M_eff});
 
     int monomers_family_zero = 0;
-    int monomers_family_one = 1000;
+    int monomers_family_one = 10000;
 
     vector<int> free_monomers({monomers_family_zero, monomers_family_one});
 
-    int template_length = 6;
+    int template_length = 10;
 
     Polymer * template_polymer = new Polymer(-1, template_length, 0);
     System * system = new System(rates, energies, free_monomers, template_polymer);
     int count = 0;
-    int transition_limit = 2406;
+    int transition_limit = 100000;
     while(count<transition_limit){
         system->chooseTransition(gen());
         count ++;
     }
-/*
-    for(auto & cong : system->conglomerates){
-        cout << endl << "Conglomerate: " << cong->index << endl;
-        cout << "Polymers:" << endl;
-        for(auto & pol : cong->polymers) {
-            cout << "Index:" << pol->index << " Length: " << pol->length << endl;
-        }
-        cout << endl << "Connections:" << endl;
-        for(auto & con : cong->connections){
-            cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-            cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-        }
-    }*/
 
     ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
 
