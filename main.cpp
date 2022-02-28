@@ -59,7 +59,7 @@ int main() {
         }
     }*/
 
-    ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/Images", ofstream::out);
+    ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
 
     if(fw.is_open()){
         //Creating all the nodes and joining polymers
