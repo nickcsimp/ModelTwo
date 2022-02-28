@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include "settings.h"
 #include "Connection.h"
 #include "Polymer.h"
 #include "UnconnectedNeighbours.h"
@@ -21,6 +22,7 @@ class Conglomerate {
 public:
     //Identifies the conglomerate
     int index;
+    settings sett;
     //Defines all connections in this conglomerate
     vector<Connection *> connections;
 
@@ -53,8 +55,8 @@ public:
     vector<ConnectedNeighbours *> connected_neighbours_list;
 
     //Initialisation
-    Conglomerate(vector<Connection *> con); //When a conglomerate splits in two, we use the separated list of connections to form the conglomerate
-    Conglomerate(Polymer * polymer); //When a single polymer is a conglomerate, there are no connections to be used
+    Conglomerate(vector<Connection *> con, settings set); //When a conglomerate splits in two, we use the separated list of connections to form the conglomerate
+    Conglomerate(Polymer * polymer, settings set); //When a single polymer is a conglomerate, there are no connections to be used
 
     //Update
     void updateConglomerate();

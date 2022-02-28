@@ -7,9 +7,14 @@
 
 
 #include "Conglomerate.h"
+#include "settings.h"
 
 class System {
 public:
+    vector<int> lengths;
+
+    settings sett;
+
     int conglomerate_index;
     int polymer_index;
 
@@ -40,11 +45,15 @@ public:
     double G_gen;//Generic bond forming free energy
     double M_eff;//Effective concentration of monomers in zipping
 
+    bool template_indestructible;
+    bool monomer_count_is_constant;
+    bool no_rebinding;
 
-    System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Polymer * template_polymer);
+
+    System(settings set);
 
     void updateRates(int cong);
-    void chooseTransition(double seed);
+    bool chooseTransition(double seed);
     void removeConglomerate(int cong);
     void addConglomerate(Conglomerate * new_cong);
 

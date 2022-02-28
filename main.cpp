@@ -5,6 +5,7 @@
 #include "Polymer.h"
 #include "System.h"
 #include "Tests.h"
+#include "settings.h"
 
 using namespace std;
 
@@ -13,35 +14,31 @@ int main() {
     Tests t;
     t.run();
 
-    double seed = 200;
+    settings set;
+
+    double seed = set.seed;
     mt19937 gen(seed);
 
-    //Initialisations
-    double k = 1;//Polymerisation rate
-    double k0 = 1;//Binding rate
-    double G_bb = -16;//Backbone forming free energy
-    double G_spec = 2;//Specific bond forming free energy
-    double G_gen = -2;//Generic bond forming free energy
-    double M_eff = 100;//Effective concentration of monomers in zipping
+    System * system = new System(set);
 
-    vector<double> rates({k, k0});
-    vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-    int monomers_family_zero = 0;
-    int monomers_family_one = 10000;
-
-    vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-    int template_length = 10;
-
-    Polymer * template_polymer = new Polymer(-1, template_length, 0);
-    System * system = new System(rates, energies, free_monomers, template_polymer);
     int count = 0;
-    int transition_limit = 100000;
-    while(count<transition_limit){
-        system->chooseTransition(gen());
+    int transition_limit = set.transition_limit;
+    bool transitions_possible = true;
+    ofstream f_hist("/Users/nicksimpson/PycharmProjects/MyProject/histogram.txt", ofstream::out);
+
+    while(count<transition_limit && transitions_possible){
+        transitions_possible = system->chooseTransition(gen());
         count ++;
+        if(f_hist.is_open()){
+            f_hist << '(';
+            for(int i = 0; i< system->lengths.size()-1; i++){
+                f_hist << system->lengths[i] << ", ";
+            }
+            f_hist << system->lengths[system->lengths.size()-1] << ')' << "\n";
+        }
     }
+
+    f_hist.close();
 
     ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
 

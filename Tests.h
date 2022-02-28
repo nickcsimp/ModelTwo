@@ -8,9 +8,11 @@
 
 #include "Polymer.h"
 #include "Conglomerate.h"
+#include "settings.h"
 
 class Tests {
 public:
+    settings set;
     void run();
     bool testConglomerateInitialissation();
     bool testConglomerateUpdate();
