@@ -4,7 +4,9 @@
 
 #include "System.h"
 
-System::System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Polymer * template_polymer){
+System::System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Polymer * template_polymer, bool bb_indest){
+    bb_indestructable = bb_indest;
+    simulation_time = 0;
     //Initialise index count
     conglomerate_index = -1;
     polymer_index = -1;
@@ -36,7 +38,7 @@ System::System(vector<double> rates, vector<double> energies, vector<int> free_m
 
     //Make template polymer into a conglomerate
     template_polymer->index = ++polymer_index;
-    Conglomerate * template_conglomerate = new Conglomerate(template_polymer);
+    Conglomerate * template_conglomerate = new Conglomerate(template_polymer, bb_indestructable);
     template_conglomerate->index = ++conglomerate_index;
     addConglomerate(template_conglomerate);
 
@@ -44,13 +46,70 @@ System::System(vector<double> rates, vector<double> energies, vector<int> free_m
     //Add all free monomers to the system as polymers within conglomerates
     for(int i=0; i<free_monomers[0]; i++){
         Polymer * new_poly = new Polymer(++polymer_index, 1, 0);
-        Conglomerate * new_cong = new Conglomerate(new_poly);
+        Conglomerate * new_cong = new Conglomerate(new_poly, bb_indestructable);
         new_cong->index = ++conglomerate_index;
         addConglomerate(new_cong);
     }
     for(int i=0; i<free_monomers[1]; i++){
         Polymer * new_poly = new Polymer(++polymer_index, 1, 1);
-        Conglomerate * new_cong = new Conglomerate(new_poly);
+        Conglomerate * new_cong = new Conglomerate(new_poly, bb_indestructable);
+        new_cong->index = ++conglomerate_index;
+        addConglomerate(new_cong);
+    }
+
+
+}
+
+System::System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Conglomerate * template_conglomerate, bool bb_indest){
+    bb_indestructable = bb_indest;
+    simulation_time = 0;
+    //Initialise index count
+    conglomerate_index = -1;
+    polymer_index = -1;
+
+    //Give vectors correct sizes
+    vector<int> empty_vector;
+    vector<vector<int>> vect(6, empty_vector);
+    conglomerate_rates = vect;
+
+    vector<int> v(6, 0);
+    total_connections = v;
+    vector<double> ve(6, 0);
+    transition_rates = ve;
+
+    vector<int> vec(2, 0);
+    total_external_sites = vec;
+
+    vector<vector<int>> vecto(2, empty_vector);
+    external_sites = vecto;
+
+
+    //Initialise system parameters
+    k = rates[0];
+    k0 = rates[1];
+    G_bb = energies[0];
+    G_spec = energies[1];
+    G_gen = energies[2];
+    M_eff = energies[3];
+
+    //Make template polymer into a conglomerate
+    for(auto & pol : template_conglomerate->polymers){
+        pol->index = ++polymer_index;
+    }
+    template_conglomerate->index = ++conglomerate_index;
+    addConglomerate(template_conglomerate);
+
+
+    //Add all free monomers to the system as polymers within conglomerates
+    for(int i=0; i<free_monomers[0]; i++){
+        Polymer * new_poly = new Polymer(++polymer_index, 1, 0);
+        Conglomerate * new_cong = new Conglomerate(new_poly, bb_indestructable);
+        new_cong->index = ++conglomerate_index;
+        addConglomerate(new_cong);
+    }
+    for(int i=0; i<free_monomers[1]; i++){
+        Polymer * new_poly = new Polymer(++polymer_index, 1, 1);
+        Conglomerate * new_cong = new Conglomerate(new_poly, bb_indestructable);
         new_cong->index = ++conglomerate_index;
         addConglomerate(new_cong);
     }
@@ -136,6 +195,11 @@ void System::updateRates(int cong){
 
 void System::chooseTransition(double seed){
     mt19937 gen(seed);
+
+    //Get a time increase
+    double random_number_time = gen();
+    double time_increase = -log(random_number_time/mt19937::max())/total_rate;
+    simulation_time = simulation_time + time_increase;
 
     //First choose a transition
     //External rates is weird, so we see if that is chosen first

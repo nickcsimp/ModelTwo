@@ -10,6 +10,9 @@
 
 class System {
 public:
+    bool bb_indestructable;
+
+    double simulation_time;
     int conglomerate_index;
     int polymer_index;
 
@@ -41,7 +44,8 @@ public:
     double M_eff;//Effective concentration of monomers in zipping
 
 
-    System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Polymer * template_polymer);
+    System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Polymer * template_polymer, bool bb_indest);
+    System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Conglomerate * template_conglomerate, bool bb_indest);
 
     void updateRates(int cong);
     void chooseTransition(double seed);

@@ -12,7 +12,7 @@ int main() {
 
     Tests t;
     t.run();
-
+/*
     double seed = 200;
     mt19937 gen(seed);
 
@@ -36,7 +36,7 @@ int main() {
 
     Polymer * template_polymer = new Polymer(-1, template_length, 0);
 
-    System * system = new System(rates, energies, free_monomers, template_polymer);
+    System * system = new System(rates, energies, free_monomers, template_polymer, false);
 
     int count = 0;
     int transition_limit = 10000;
@@ -45,19 +45,6 @@ int main() {
         system->chooseTransition(gen());
         count ++;
     }
-/*
-    for(auto & cong : system->conglomerates){
-        cout << endl << "Conglomerate: " << cong->index << endl;
-        cout << "Polymers:" << endl;
-        for(auto & pol : cong->polymers) {
-            cout << "Index:" << pol->index << " Length: " << pol->length << endl;
-        }
-        cout << endl << "Connections:" << endl;
-        for(auto & con : cong->connections){
-            cout << "Polymer: " << con->polymers_in_connection[0]->index << " Index: " << con->indexes[0] << endl;
-            cout << "Polymer: " << con->polymers_in_connection[1]->index << " Index: " << con->indexes[1] << endl << endl;
-        }
-    }*/
 
     ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
 
@@ -163,5 +150,6 @@ int main() {
     }
 
     delete system;
+    */
     return 0;
 }

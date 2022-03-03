@@ -8,6 +8,7 @@
 
 #include "Polymer.h"
 #include "Conglomerate.h"
+#include "System.h"
 
 class Tests {
 public:
@@ -18,6 +19,9 @@ public:
     bool testConglomerate();
     bool testMiddleTailUnbinding();
     bool testEndTailUnbinding();
+    bool testPolymerisationEquilibrium();
+    bool testDimerisationEquilibrium();
+    bool testTailBindEquilibrium();
 };
 
 
