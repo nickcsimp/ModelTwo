@@ -20,6 +20,7 @@ using namespace std;
 
 class Conglomerate {
 public:
+    bool backbone_indestructable;
     //Identifies the conglomerate
     int index;
     //Defines all connections in this conglomerate
@@ -54,8 +55,8 @@ public:
     vector<ConnectedNeighbours *> connected_neighbours_list;
 
     //Initialisation
-    Conglomerate(vector<Connection *> con); //When a conglomerate splits in two, we use the separated list of connections to form the conglomerate
-    Conglomerate(Polymer * polymer); //When a single polymer is a conglomerate, there are no connections to be used
+    Conglomerate(vector<Connection *> con, bool bb); //When a conglomerate splits in two, we use the separated list of connections to form the conglomerate
+    Conglomerate(Polymer * polymer, bool bb); //When a single polymer is a conglomerate, there are no connections to be used
 
     //Update
     void updateConglomerate();

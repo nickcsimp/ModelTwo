@@ -12,7 +12,7 @@
 class System {
 public:
     vector<int> lengths;
-
+    double simulation_time;
     int conglomerate_index;
     int polymer_index;
 
@@ -49,7 +49,7 @@ public:
 
 
     System();
-
+    //TODO system initialised with conglomerate
     void updateRates(int cong);
     bool chooseTransition(double seed);
     void removeConglomerate(int cong);

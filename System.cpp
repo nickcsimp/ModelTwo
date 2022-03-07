@@ -80,6 +80,7 @@ void System::updateRates(int cong){
             external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
         }
     }
+
     //Update external rates
     total_external_sites[0] = total_external_sites[0] - external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] - external_sites[1][cong];
@@ -98,6 +99,7 @@ void System::updateRates(int cong){
         }
     }
     total_rate = total_rate + external_connection_rate;
+
     transition_rates[0] = transition_rates[0] - conglomerate_rates[0][cong]*(k0*exp(G_spec+G_gen));
     total_connections[0] = total_connections[0] - conglomerate_rates[0][cong];
     conglomerate_rates[0][cong] = conglomerates[cong]->head_unbinding_list.size();
@@ -145,6 +147,11 @@ void System::updateRates(int cong){
 
 bool System::chooseTransition(double seed){
     mt19937 gen(seed);
+
+    //Get a time increase
+    double random_number_time = gen();
+    double time_increase = -log(random_number_time/mt19937::max())/total_rate;
+    simulation_time = simulation_time + time_increase;
 
     //First choose a transition
     //External rates is weird, so we see if that is chosen first
