@@ -13,8 +13,6 @@ class System {
 public:
     vector<int> lengths;
 
-    settings sett;
-
     int conglomerate_index;
     int polymer_index;
 
@@ -50,7 +48,7 @@ public:
     bool no_rebinding;
 
 
-    System(settings set);
+    System();
 
     void updateRates(int cong);
     bool chooseTransition(double seed);

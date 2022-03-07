@@ -12,7 +12,6 @@
 
 class Tests {
 public:
-    settings set;
     void run();
     bool testConglomerateInitialissation();
     bool testConglomerateUpdate();

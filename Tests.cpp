@@ -33,7 +33,7 @@ void Tests::run(){
 bool Tests::testConglomerateInitialissation() {
 
     Polymer * polymer = new Polymer(1, 6, 0);
-    Conglomerate * conglomerate = new Conglomerate(polymer, set);
+    Conglomerate * conglomerate = new Conglomerate(polymer);
 
     if(conglomerate->polymers.size()!=1){
         delete conglomerate;
@@ -94,7 +94,7 @@ bool Tests::testConglomerateInitialissation() {
     vector<Connection *> connections;
     connections.push_back(con);
 
-    conglomerate = new Conglomerate(connections, set);
+    conglomerate = new Conglomerate(connections);
 
     if(conglomerate->polymers.size()!=2){
         cout << 1 << endl;
@@ -186,7 +186,7 @@ bool Tests::testConglomerateInitialissation() {
 bool Tests::testConglomerateUpdate() {
 
     Polymer * polymer = new Polymer(1, 6, 0);
-    Conglomerate * conglomerate = new Conglomerate(polymer, set);
+    Conglomerate * conglomerate = new Conglomerate(polymer);
     conglomerate->updateConglomerate();
 
     if(conglomerate->polymers.size()!=1){
@@ -248,7 +248,7 @@ bool Tests::testConglomerateUpdate() {
     vector<Connection *> connections;
     connections.push_back(con);
 
-    conglomerate = new Conglomerate(connections, set);
+    conglomerate = new Conglomerate(connections);
 
     conglomerate->updateConglomerate();
 
@@ -340,9 +340,9 @@ bool Tests::testConglomerateUpdate() {
 
 bool Tests::testConglomerateAddConnection() {
     Polymer * polymer = new Polymer(1, 6,0);
-    Conglomerate * conglomerate = new Conglomerate(polymer, set);
+    Conglomerate * conglomerate = new Conglomerate(polymer);
     Polymer * poly = new Polymer(2, 1, 1);
-    Conglomerate * cong = new Conglomerate(poly, set);
+    Conglomerate * cong = new Conglomerate(poly);
     Connection * con = new Connection(polymer, 5, poly, 0);
     conglomerate->addConnection(cong, con);
 
@@ -448,7 +448,7 @@ bool Tests::testConglomerate() {
     connections.push_back(con_one);
     connections.push_back(con_two);
 
-    Conglomerate * conglomerate = new Conglomerate(connections, set);
+    Conglomerate * conglomerate = new Conglomerate(connections);
 
     bool failed = false;
 
@@ -535,7 +535,7 @@ bool Tests::testMiddleTailUnbinding(){
     connections.push_back(con_five);
     connections.push_back(con_six);
 
-    Conglomerate * conglomerate = new Conglomerate(connections, set);
+    Conglomerate * conglomerate = new Conglomerate(connections);
 
     bool failed = false;
 
@@ -584,7 +584,7 @@ bool Tests::testMiddleTailUnbinding(){
         cout << "Tail unbinding size " << conglomerate->tail_unbinding_list.size() << endl;
         failed = true;
     }
-    if(set.template_indestructible){
+    if(set_template_indestructible){
         if (conglomerate->connected_neighbours_list.size() != 5) {
             cout << 11 << endl;
             failed = true;
@@ -630,7 +630,7 @@ bool Tests::testEndTailUnbinding(){
     connections.push_back(con_five);
     connections.push_back(con_six);
 
-    Conglomerate * conglomerate = new Conglomerate(connections, set);
+    Conglomerate * conglomerate = new Conglomerate(connections);
 
     bool failed = false;
 
@@ -690,7 +690,7 @@ bool Tests::testEndTailUnbinding(){
         cout << 10.5 << endl;
         failed = true;
     }
-    if(set.template_indestructible){
+    if(set_template_indestructible){
         if (conglomerate->connected_neighbours_list.size() != 4) {
             cout << 11 << endl;
             failed = true;

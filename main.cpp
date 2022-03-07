@@ -9,20 +9,48 @@
 
 using namespace std;
 
+bool set_template_indestructible;
+bool set_monomer_count_is_constant; //Only useful if no_rebinding = true
+bool set_no_rebinding;
+double set_seed;
+double set_k;//Polymerisation rate
+double set_k0;//Binding rate
+double set_G_bb;//Backbone forming free energy
+double set_G_spec;//Specific bond forming free energy
+double set_G_gen;//Generic bond forming free energy
+double set_M_eff;//Effective concentration of monomers in zipping
+int set_monomers_family_zero;
+int set_monomers_family_one;
+int set_template_length;
+int set_transition_limit;
+
 int main() {
+
+    set_template_indestructible = true;
+    set_monomer_count_is_constant = true;
+    set_no_rebinding = true;
+    set_seed = 200;
+    set_k = 1;
+    set_k0 = 1;
+    set_G_bb = -15;
+    set_G_spec = -4;
+    set_G_gen = -5;
+    set_M_eff = 100;
+    set_monomers_family_zero = 0;
+    set_monomers_family_one = 100;
+    set_template_length = 6;
+    set_transition_limit = 100000;
 
     Tests t;
     t.run();
 
-    settings set;
-
-    double seed = set.seed;
+    double seed = set_seed;
     mt19937 gen(seed);
 
-    System * system = new System(set);
+    System * system = new System();
 
     int count = 0;
-    int transition_limit = set.transition_limit;
+    int transition_limit = set_transition_limit;
     bool transitions_possible = true;
     ofstream f_hist("/Users/nicksimpson/PycharmProjects/MyProject/histogram.txt", ofstream::out);
 

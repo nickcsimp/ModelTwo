@@ -5,9 +5,7 @@
 #include "System.h"
 
 
-System::System(settings set){
-
-    sett = set;
+System::System(){
 
     //Initialise index count
     conglomerate_index = -1;
@@ -31,43 +29,43 @@ System::System(settings set){
 
 
     //Initialise system parameters
-    k = set.k;
-    k0 = set.k0;
-    G_bb = set.G_bb;
-    G_spec = set.G_spec;
-    G_gen = set.G_gen;
-    M_eff = set.M_eff;
+    k = set_k;
+    k0 = set_k0;
+    G_bb = set_G_bb;
+    G_spec = set_G_spec;
+    G_gen = set_G_gen;
+    M_eff = set_M_eff;
 
     //Make template polymer into a conglomerate
-    Polymer * template_polymer = new Polymer(++polymer_index, set.template_length, 0);
-    Conglomerate * template_conglomerate = new Conglomerate(template_polymer, set);
+    Polymer * template_polymer = new Polymer(++polymer_index, set_template_length, 0);
+    Conglomerate * template_conglomerate = new Conglomerate(template_polymer);
     template_conglomerate->index = ++conglomerate_index;
     addConglomerate(template_conglomerate);
 
     //Add to lengths list
-    vector<int> victor(set.template_length, 0);
-    victor[set.template_length-1]++;
+    vector<int> victor(set_template_length, 0);
+    victor[set_template_length-1]++;
     lengths = victor;
 
     //Add all free monomers to the system as polymers within conglomerates
-    for(int i=0; i<set.monomers_family_zero; i++){
+    for(int i=0; i<set_monomers_family_zero; i++){
         Polymer * new_poly = new Polymer(++polymer_index, 1, 0);
-        Conglomerate * new_cong = new Conglomerate(new_poly, set);
+        Conglomerate * new_cong = new Conglomerate(new_poly);
         new_cong->index = ++conglomerate_index;
         addConglomerate(new_cong);
         lengths[0]++;
     }
-    for(int i=0; i<set.monomers_family_one; i++){
+    for(int i=0; i<set_monomers_family_one; i++){
         Polymer * new_poly = new Polymer(++polymer_index, 1, 1);
-        Conglomerate * new_cong = new Conglomerate(new_poly, set);
+        Conglomerate * new_cong = new Conglomerate(new_poly);
         new_cong->index = ++conglomerate_index;
         addConglomerate(new_cong);
         lengths[0]++;
     }
 
-    template_indestructible = set.template_indestructible;
-    monomer_count_is_constant = set.monomer_count_is_constant;
-    no_rebinding = set.no_rebinding;
+    template_indestructible = set_template_indestructible;
+    monomer_count_is_constant = set_monomer_count_is_constant;
+    no_rebinding = set_no_rebinding;
 
 }
 
@@ -312,8 +310,9 @@ bool System::chooseTransition(double seed){
                     if(monomer_count_is_constant) {
                         for (int i = 0; i < monomers_to_add; i++) {
                             //Create new monomers (polymers and conglomerates)
+                            //Put them into the system
                             Polymer * p = new Polymer(++polymer_index, 1, 1);
-                            Conglomerate * c = new Conglomerate(p, sett);
+                            Conglomerate * c = new Conglomerate(p);
                             c->index = ++conglomerate_index;
                             addConglomerate(c);
                             lengths[0]++;
@@ -360,7 +359,7 @@ bool System::chooseTransition(double seed){
                         for (int i = 0; i < monomers_to_add; i++) {
                             //Create new monomers (polymers and conglomerates)
                             Polymer * p = new Polymer(++polymer_index, 1, 1);
-                            Conglomerate * c = new Conglomerate(p, sett);
+                            Conglomerate * c = new Conglomerate(p);
                             c->index = ++conglomerate_index;
                             addConglomerate(c);
                             lengths[0]++;

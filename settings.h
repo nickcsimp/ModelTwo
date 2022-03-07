@@ -5,24 +5,20 @@
 #ifndef MODELTWO_SETTINGS_H
 #define MODELTWO_SETTINGS_H
 
-
-class settings {
-public:
-    bool template_indestructible = true;
-    bool monomer_count_is_constant = false; //Only useful if no_rebinding = true
-    bool no_rebinding = false;
-    double seed = 200;
-    double k = 1;//Polymerisation rate
-    double k0 = 1;//Binding rate
-    double G_bb = -1;//Backbone forming free energy
-    double G_spec = 2;//Specific bond forming free energy
-    double G_gen = -2;//Generic bond forming free energy
-    double M_eff = 100;//Effective concentration of monomers in zipping
-    int monomers_family_zero = 0;
-    int monomers_family_one = 100;
-    int template_length = 10;
-    int transition_limit = 100000;
-};
+extern bool set_template_indestructible;
+extern bool set_monomer_count_is_constant; //Only useful if no_rebinding = true
+extern bool set_no_rebinding;
+extern double set_seed;
+extern double set_k;//Polymerisation rate
+extern double set_k0;//Binding rate
+extern double set_G_bb;//Backbone forming free energy
+extern double set_G_spec;//Specific bond forming free energy
+extern double set_G_gen;//Generic bond forming free energy
+extern double set_M_eff;//Effective concentration of monomers in zipping
+extern int set_monomers_family_zero;
+extern int set_monomers_family_one;
+extern int set_template_length;
+extern int set_transition_limit;
 
 
 #endif //MODELTWO_SETTINGS_H
