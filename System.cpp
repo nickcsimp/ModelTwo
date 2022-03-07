@@ -474,7 +474,8 @@ bool System::chooseTransition(double seed){
             lengths[p_one->length-1]--;
             lengths[p_two->length-1]--;
             if(lengths.size()<p_one->length+p_two->length){
-                for(int i=0; i<p_one->length+p_two->length-lengths.size(); i++){
+                int length_difference = p_one->length+p_two->length-lengths.size();
+                for(int i=0; i<length_difference; i++){
                     lengths.push_back(0);
                 }
             }

@@ -30,8 +30,8 @@ int main() {
     tests.run();
 */
     set_template_indestructible = true;
-    set_monomer_count_is_constant = true;
-    set_no_rebinding = true;
+    set_monomer_count_is_constant = false;
+    set_no_rebinding = false;
     set_seed = 200;
     set_k = 1;
     set_k0 = 1;
@@ -40,8 +40,8 @@ int main() {
     set_G_gen = -5;
     set_M_eff = 100;
     set_monomers_family_zero = 0;
-    set_monomers_family_one = 100;
-    set_template_length = 6;
+    set_monomers_family_one = 10000;
+    set_template_length = 100;
     set_transition_limit = 100000;
 
     double seed = set_seed;
@@ -58,11 +58,11 @@ int main() {
         transitions_possible = system->chooseTransition(gen());
         count ++;
         if(f_hist.is_open()){
-            f_hist << '(';
+            f_hist << '[';
             for(int i = 0; i< system->lengths.size()-1; i++){
                 f_hist << system->lengths[i] << ", ";
             }
-            f_hist << system->lengths[system->lengths.size()-1] << ')' << "\n";
+            f_hist << system->lengths[system->lengths.size()-1] << ']' << "\n";
         }
 
     }
