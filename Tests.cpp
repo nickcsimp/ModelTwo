@@ -26,13 +26,14 @@ void Tests::run(){
     if(!testEndTailUnbinding()) {
         cout << "Error: Test End Tail Unbinding()" << endl;
     }
-
     if(!testPolymerisationEquilibrium()) {
         cout << "Error: testPolymerisationEquilibrium()" << endl;
     }
+
     if(!testDimerisationEquilibrium()) {
         cout << "Error: testDimerisationEquilibrium()" << endl;
     }
+
     if(!testTailBindEquilibrium()) {
         cout << "Error: testTailBindEquilibrium()" << endl;
     }
@@ -741,31 +742,27 @@ bool Tests::testPolymerisationEquilibrium(){
     vector<double> Z;
     vector<double> Z_connected;
     vector<double> Z_unconnected;
-    int transition_limit = 100000;
+    int transition_limit = 1000;
     for(auto & seed : seeds) {
+
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 1;
+        set_k0 = 1;
+        set_G_bb = -10;
+        set_G_spec = -1000;
+        set_G_gen = -10;
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 2;
+        set_template_length = 2;
+        set_transition_limit = 1000;
+
         mt19937 gen(seed);
 
-        //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 1;//Binding rate
-        double G_bb = -10;//Backbone forming free energy
-        double G_spec = -10000;//Specific bond forming free energy
-        double G_gen = -10;//Generic bond forming free energy
-        double M_eff = 100;//Effective concentration of monomers in zipping
-
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 2; //2 free monomers will bind and stay bound so should only de/polymerise
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-        int template_length = 2;
-
-        Polymer *template_polymer = new Polymer(-1, template_length, 0);
-
-        System *system = new System(rates, energies, free_monomers, template_polymer, true);
+        System *system = new System();
 
         int count = 0;
 
@@ -786,7 +783,7 @@ bool Tests::testPolymerisationEquilibrium(){
         }
 
         //Transition_limit*k will be the expected number or transitions because the rates are all 1/sec
-        Z.push_back((count-transition_limit*k)/sqrt(transition_limit*k));
+        Z.push_back((count-transition_limit*set_k)/sqrt(transition_limit*set_k));
 
         //Both states are equally likely and so we expect that half the time will be spent at each
         //Therefore we use transition_limit*0.5 for both as the expected time
@@ -824,29 +821,24 @@ bool Tests::testPolymerisationEquilibrium(){
     Z_connected.clear();
     Z_unconnected.clear();
     for(auto & seed : seeds) {
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 1;
+        set_k0 = 1;
+        set_G_bb = -1; //HERE IS THE CHANGE
+        set_G_spec = -1000;
+        set_G_gen = -(1+log(0.5));//HERE IS THE CHANGE
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 2;
+        set_template_length = 2;
+        set_transition_limit = 1000;
+
         mt19937 gen(seed);
 
-        //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 1;//Binding rate
-        double G_bb = -1;//Backbone forming free energy - HERE IS THE CHANGE
-        double G_spec = -10000;//Specific bond forming free energy
-        double G_gen = -(1+log(0.5));//Generic bond forming free energy - HERE IS THE CHANGE
-        double M_eff = 100;//Effective concentration of monomers in zipping
-
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 2;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-        int template_length = 2;
-
-        Polymer *template_polymer = new Polymer(-1, template_length, 0);
-
-        System *system = new System(rates, energies, free_monomers, template_polymer, true);
+        System *system = new System();
 
         int count = 0;
 
@@ -909,29 +901,25 @@ bool Tests::testPolymerisationEquilibrium(){
     //If we increase the polymerisation rate, the state probabilities will remain the same but there will be more transitions
 
     for(auto & seed : seeds) {
+
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 100;//HERE IS THE CHANGE
+        set_k0 = 1;
+        set_G_bb = -10;
+        set_G_spec = -1000;
+        set_G_gen = -10;
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 2;
+        set_template_length = 2;
+        set_transition_limit = 1000;
+
         mt19937 gen(seed);
 
-        //Initialisations
-        double k = 100;//Polymerisation rate - HERE IS THE CHANGE
-        double k0 = 1;//Binding rate
-        double G_bb = -10;//Backbone forming free energy
-        double G_spec = -10000;//Specific bond forming free energy
-        double G_gen = -10;//Generic bond forming free energy
-        double M_eff = 100;//Effective concentration of monomers in zipping
-
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 2;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-        int template_length = 2;
-
-        Polymer *template_polymer = new Polymer(-1, template_length, 0);
-
-        System *system = new System(rates, energies, free_monomers, template_polymer, true);
+        System *system = new System();
 
         int count = 0;
 
@@ -952,7 +940,7 @@ bool Tests::testPolymerisationEquilibrium(){
         }
 
         //Transition count will increase as k increases
-        Z.push_back((count-transition_limit*k)/sqrt(transition_limit*k));
+        Z.push_back((count-transition_limit*set_k)/sqrt(transition_limit*set_k));
 
         //Still expecting half the time in each state
         Z_connected.push_back((hist[0]-transition_limit*0.5)/sqrt(transition_limit*0.5));
@@ -994,31 +982,26 @@ bool Tests::testDimerisationEquilibrium(){
     vector<double> Z;
     vector<double> Z_connected;
     vector<double> Z_unconnected;
-    int transition_limit = 100000;
+    int transition_limit = 1000;
     for(auto & seed : seeds) {
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 1;
+        set_k0 = 1;
+        set_G_bb = -1;
+        set_G_spec = 1;
+        set_G_gen = -1;
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 1;
+        set_template_length = 1;
+        set_transition_limit = 1000;
+
         mt19937 gen(seed);
 
-        //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 1;//Binding rate
-        double G_bb = -1;//Backbone forming free energy
-        double G_spec = 1;//Specific bond forming free energy
-        double G_gen = -1;//Generic bond forming free energy
-        double M_eff = 100;//Effective concentration of monomers in zipping
-
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 1;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-        int template_length = 1;
-
-        Polymer *template_polymer = new Polymer(-1, template_length, 0);
-
-        System *system = new System(rates, energies, free_monomers, template_polymer, true);
+        System *system = new System();
 
         int count = 0;
 
@@ -1039,7 +1022,7 @@ bool Tests::testDimerisationEquilibrium(){
         }
 
         // Total transitions will increase with the binding rate and the transition limit but rates are 1/sec so no factor
-        Z.push_back((count-transition_limit*k0)/sqrt(transition_limit*k0));
+        Z.push_back((count-transition_limit*set_k0)/sqrt(transition_limit*set_k0));
         //We have the two rates the same so the time spent should be equal
         Z_connected.push_back((hist[0]-transition_limit*0.5)/sqrt(transition_limit*0.5));
         Z_unconnected.push_back((hist[1]-transition_limit*0.5)/sqrt(transition_limit*0.5));
@@ -1074,29 +1057,26 @@ bool Tests::testDimerisationEquilibrium(){
     //We expect the monomers are connected for twice as much time as they are separate
 
     for(auto & seed : seeds) {
-        mt19937 gen(seed);
 
         //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 1;//Binding rate
-        double G_bb = -1;//Backbone forming free energy
-        double G_spec = -0.5*log(2);//Specific bond forming free energy - HERE IS THE CHANGE
-        double G_gen = -0.5*log(2);//Generic bond forming free energy - HERE IS THE CHANGE
-        double M_eff = 100;//Effective concentration of monomers in zipping
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 1;
+        set_k0 = 1;
+        set_G_bb = -1;
+        set_G_spec = -0.5*log(2);//HERE IS THE CHANGE
+        set_G_gen = -0.5*log(2);//HERE IS THE CHANGE
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 1;
+        set_template_length = 1;
+        set_transition_limit = 1000;
 
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
+        mt19937 gen(seed);
 
-        int monomers_family_zero = 0;
-        int monomers_family_one = 1;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-        int template_length = 1;
-
-        Polymer *template_polymer = new Polymer(-1, template_length, 0);
-
-        System *system = new System(rates, energies, free_monomers, template_polymer, true);
+        System *system = new System();
 
         int count = 0;
 
@@ -1156,29 +1136,26 @@ bool Tests::testDimerisationEquilibrium(){
 
     // If we increase k0 then the state probabilities remain the same but the number of transitions will increase
     for(auto & seed : seeds) {
-        mt19937 gen(seed);
 
         //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 100;//Binding rate - HERE IS THE CHANGE
-        double G_bb = -1;//Backbone forming free energy
-        double G_spec = 1;//Specific bond forming free energy
-        double G_gen = -1;//Generic bond forming free energy
-        double M_eff = 100;//Effective concentration of monomers in zipping
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 1;
+        set_k0 = 100;//HERE IS THE CHANGE
+        set_G_bb = -1;
+        set_G_spec = 1;//HERE IS THE CHANGE
+        set_G_gen = -1;
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 1;
+        set_template_length = 1;
+        set_transition_limit = 1000;
 
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
+        mt19937 gen(seed);
 
-        int monomers_family_zero = 0;
-        int monomers_family_one = 1;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-        int template_length = 1;
-
-        Polymer *template_polymer = new Polymer(-1, template_length, 0);
-
-        System *system = new System(rates, energies, free_monomers, template_polymer, true);
+        System *system = new System();
 
         int count = 0;
 
@@ -1199,7 +1176,7 @@ bool Tests::testDimerisationEquilibrium(){
         }
 
         //Same calculations as only k0 makes any change
-        Z.push_back((count-transition_limit*k0)/sqrt(transition_limit*k0));
+        Z.push_back((count-transition_limit*set_k0)/sqrt(transition_limit*set_k0));
 
         Z_connected.push_back((hist[0]-transition_limit*0.5)/sqrt(transition_limit*0.5));
         Z_unconnected.push_back((hist[1]-transition_limit*0.5)/sqrt(transition_limit*0.5));
@@ -1244,30 +1221,30 @@ bool Tests::testTailBindEquilibrium(){
     vector<double> Z_unconnected;
     int transition_limit = 1000;
     for(auto & seed : seeds) {
-        mt19937 gen(seed);
-
         //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 1;//Binding rate
-        double G_bb = -100000;//Backbone forming free energy
-        double G_spec = log(100);//Specific bond forming free energy - INTERESTING PART
-        double G_gen = -1000;//Generic bond forming free energy
-        double M_eff = 100;//Effective concentration of monomers in zipping
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 0.1;
+        set_k0 = 0.1;
+        set_G_bb = -100000;
+        set_G_spec = log(100);
+        set_G_gen = -1000;
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_template_length = 0;
+        set_transition_limit = 1000;
 
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 0;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
+        mt19937 gen(seed);
 
         Polymer *template_polymer = new Polymer(-1, 3, 0);
         Polymer *copy_polymer = new Polymer(-1, 2, 1);
 
         Connection * con = new Connection(template_polymer, 2, copy_polymer, 0);
-        Conglomerate * cong = new Conglomerate({con}, true);
-        System *system = new System(rates, energies, free_monomers, cong, true);
+        Conglomerate * cong = new Conglomerate({con});
+        System *system = new System(cong);
 
         int count = 0;
 
@@ -1290,7 +1267,7 @@ bool Tests::testTailBindEquilibrium(){
         }
 
         //The effective concentration makes a difference to the rate so must be included
-        Z.push_back((count-transition_limit*k0*M_eff)/sqrt(transition_limit*k0*M_eff));
+        Z.push_back((count-transition_limit*set_k0*set_M_eff)/sqrt(transition_limit*set_k0*set_M_eff));
         //Equal times are expected for each state
         Z_connected.push_back((hist[0]-transition_limit*0.5)/sqrt(transition_limit*0.5));
         Z_unconnected.push_back((hist[1]-transition_limit*0.5)/sqrt(transition_limit*0.5));
@@ -1324,30 +1301,30 @@ bool Tests::testTailBindEquilibrium(){
     //If we make Gspec = log(Meff/2) then we are more likely to be connected than unconnected
     //Twice as likely connected
     for(auto & seed : seeds) {
-        mt19937 gen(seed);
-
         //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 1;//Binding rate
-        double G_bb = -100000;//Backbone forming free energy
-        double G_spec = log(50);//Specific bond forming free energy - HERE IS THE CHANGE
-        double G_gen = -1000;//Generic bond forming free energy
-        double M_eff = 100;//Effective concentration of monomers in zipping
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 0.1;
+        set_k0 = 0.1;
+        set_G_bb = -100000;
+        set_G_spec = log(50);//HERE IS THE CHANGE
+        set_G_gen = -1000;
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_template_length = 0;
+        set_transition_limit = 1000;
 
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 0;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
+        mt19937 gen(seed);
 
         Polymer *template_polymer = new Polymer(-1, 3, 0);
         Polymer *copy_polymer = new Polymer(-1, 2, 1);
 
         Connection * con = new Connection(template_polymer, 2, copy_polymer, 0);
-        Conglomerate * cong = new Conglomerate({con}, true);
-        System *system = new System(rates, energies, free_monomers, cong, true);
+        Conglomerate * cong = new Conglomerate({con});
+        System *system = new System(cong);
 
         int count = 0;
 
@@ -1370,7 +1347,7 @@ bool Tests::testTailBindEquilibrium(){
         }
 
         //Reduced number of transitions as a more favourable state is available
-        Z.push_back((count-transition_limit*k0*M_eff/1.5)/sqrt(transition_limit*k0*M_eff/1.5));
+        Z.push_back((count-transition_limit*set_k0*set_M_eff/1.5)/sqrt(transition_limit*set_k0*set_M_eff/1.5));
 
         //Twice as likely to be in the connected state as the unconnected state
         Z_connected.push_back((hist[0]-transition_limit/1.5)/sqrt(transition_limit/1.5));
@@ -1404,30 +1381,30 @@ bool Tests::testTailBindEquilibrium(){
 
     //If we drop the effective conc (so Gspec = log(2*Meff)) then the unconnected state is more likely
     for(auto & seed : seeds) {
-        mt19937 gen(seed);
-
         //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 1;//Binding rate
-        double G_bb = -100000;//Backbone forming free energy
-        double G_spec = log(100);//Specific bond forming free energy
-        double G_gen = -1000;//Generic bond forming free energy
-        double M_eff = 50;//Effective concentration of monomers in zipping - HERE IS THE CHANGE
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 0.1;
+        set_k0 = 0.1;
+        set_G_bb = -100000;
+        set_G_spec = log(100);
+        set_G_gen = -1000;
+        set_M_eff = 50;//HERE IS THE CHANGE
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_template_length = 0;
+        set_transition_limit = 1000;
 
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 0;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
+        mt19937 gen(seed);
 
         Polymer *template_polymer = new Polymer(-1, 3, 0);
         Polymer *copy_polymer = new Polymer(-1, 2, 1);
 
         Connection * con = new Connection(template_polymer, 2, copy_polymer, 0);
-        Conglomerate * cong = new Conglomerate({con}, true);
-        System *system = new System(rates, energies, free_monomers, cong, true);
+        Conglomerate * cong = new Conglomerate({con});
+        System *system = new System(cong);
 
         int count = 0;
 
@@ -1450,7 +1427,7 @@ bool Tests::testTailBindEquilibrium(){
         }
 
         //Transition count stays the same as previous
-        Z.push_back((count-transition_limit*k0*100/1.5)/sqrt(transition_limit*100*k0/1.5));
+        Z.push_back((count-transition_limit*set_k0*100/1.5)/sqrt(transition_limit*100*set_k0/1.5));
         //Now the connected state is less likely
         Z_connected.push_back((hist[0]-transition_limit/3)/sqrt(transition_limit/3));
         Z_unconnected.push_back((hist[1]-transition_limit/1.5)/sqrt(transition_limit/1.5));
@@ -1483,30 +1460,30 @@ bool Tests::testTailBindEquilibrium(){
 
     //If we increase the binding rate, the number of transitions should increase but the probabilities remain the same
     for(auto & seed : seeds) {
-        mt19937 gen(seed);
-
         //Initialisations
-        double k = 1;//Polymerisation rate
-        double k0 = 100;//Binding rate
-        double G_bb = -100000;//Backbone forming free energy
-        double G_spec = log(100);//Specific bond forming free energy
-        double G_gen = -1000;//Generic bond forming free energy
-        double M_eff = 100;//Effective concentration of monomers in zipping
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_seed = seed;
+        set_k = 0.1;
+        set_k0 = 10;//HERE IS THE CHANGE
+        set_G_bb = -100000;
+        set_G_spec = log(100);
+        set_G_gen = -1000;
+        set_M_eff = 100;
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_template_length = 0;
+        set_transition_limit = 1000;
 
-        vector<double> rates({k, k0});
-        vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-        int monomers_family_zero = 0;
-        int monomers_family_one = 0;
-
-        vector<int> free_monomers({monomers_family_zero, monomers_family_one});
+        mt19937 gen(seed);
 
         Polymer *template_polymer = new Polymer(-1, 3, 0);
         Polymer *copy_polymer = new Polymer(-1, 2, 1);
 
         Connection * con = new Connection(template_polymer, 2, copy_polymer, 0);
-        Conglomerate * cong = new Conglomerate({con}, true);
-        System *system = new System(rates, energies, free_monomers, cong, true);
+        Conglomerate * cong = new Conglomerate({con});
+        System *system = new System(cong);
 
         int count = 0;
 
@@ -1529,7 +1506,7 @@ bool Tests::testTailBindEquilibrium(){
         }
 
         //Transition count will increase with k0
-        Z.push_back((count-transition_limit*k0*M_eff)/sqrt(transition_limit*k0*M_eff));
+        Z.push_back((count-transition_limit*set_k0*set_M_eff)/sqrt(transition_limit*set_k0*set_M_eff));
 
         //Equal chance still for each state
         Z_connected.push_back((hist[0]-transition_limit*0.5)/sqrt(transition_limit*0.5));
@@ -1556,6 +1533,6 @@ bool Tests::testTailBindEquilibrium(){
         cout << "Confidence level lower than expected." << endl;
         cout << "Z=" << mean << " for the time spent unconnected in simulation 8." << endl;
     }
-
+    //TODO process finished with exit code 139
     return true;
 }

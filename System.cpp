@@ -69,6 +69,75 @@ System::System(){
 
 }
 
+System::System(Conglomerate * initial_conglomerate){
+    //Initialise index count
+    conglomerate_index = -1;
+    polymer_index = -1;
+
+    //Give vectors correct sizes
+    vector<int> empty_vector;
+    vector<vector<int>> vect(6, empty_vector);
+    conglomerate_rates = vect;
+
+    vector<int> v(6, 0);
+    total_connections = v;
+    vector<double> ve(6, 0);
+    transition_rates = ve;
+
+    vector<int> vec(2, 0);
+    total_external_sites = vec;
+
+    vector<vector<int>> vecto(2, empty_vector);
+    external_sites = vecto;
+
+
+    //Initialise system parameters
+    k = set_k;
+    k0 = set_k0;
+    G_bb = set_G_bb;
+    G_spec = set_G_spec;
+    G_gen = set_G_gen;
+    M_eff = set_M_eff;
+
+    int longest_polymer = 0;
+    //Make template conglomerate part of the system
+    for(auto & pol : initial_conglomerate->polymers){
+        pol->index = ++polymer_index;
+        if(pol->length > longest_polymer){
+            longest_polymer = pol->length;
+        }
+    }
+    initial_conglomerate->index = ++conglomerate_index;
+    addConglomerate(initial_conglomerate);
+
+    //Add to lengths list
+    vector<int> victor(longest_polymer, 0);
+    for(auto & pol : initial_conglomerate->polymers){
+        victor[pol->length-1]++;
+    }
+    lengths = victor;
+
+    //Add all free monomers to the system as polymers within conglomerates
+    for(int i=0; i<set_monomers_family_zero; i++){
+        Polymer * new_poly = new Polymer(++polymer_index, 1, 0);
+        Conglomerate * new_cong = new Conglomerate(new_poly);
+        new_cong->index = ++conglomerate_index;
+        addConglomerate(new_cong);
+        lengths[0]++;
+    }
+    for(int i=0; i<set_monomers_family_one; i++){
+        Polymer * new_poly = new Polymer(++polymer_index, 1, 1);
+        Conglomerate * new_cong = new Conglomerate(new_poly);
+        new_cong->index = ++conglomerate_index;
+        addConglomerate(new_cong);
+        lengths[0]++;
+    }
+
+    template_indestructible = set_template_indestructible;
+    monomer_count_is_constant = set_monomer_count_is_constant;
+    no_rebinding = set_no_rebinding;
+}
+
 
 void System::updateRates(int cong){
     total_rate = 0;
@@ -148,6 +217,12 @@ void System::updateRates(int cong){
 bool System::chooseTransition(double seed){
     mt19937 gen(seed);
 
+
+    if(total_rate == 0){
+        cout << "No transitions possible" << endl;
+        return false;
+    }
+
     //Get a time increase
     double random_number_time = gen();
     double time_increase = -log(random_number_time/mt19937::max())/total_rate;
@@ -165,11 +240,6 @@ bool System::chooseTransition(double seed){
     int chosen_site_one = -1;
     int first = 0;
     int second = 1;
-
-    if(total_rate == 0){
-        cout << "No transitions possible" << endl;
-        return false;
-    }
 
     if((current_rate/total_rate)>=(random_number_transition/mt19937::max())){
         //external transition chosen

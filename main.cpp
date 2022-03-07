@@ -25,7 +25,10 @@ int set_template_length;
 int set_transition_limit;
 
 int main() {
-
+/*
+    Tests tests;
+    tests.run();
+*/
     set_template_indestructible = true;
     set_monomer_count_is_constant = true;
     set_no_rebinding = true;
@@ -40,9 +43,6 @@ int main() {
     set_monomers_family_one = 100;
     set_template_length = 6;
     set_transition_limit = 100000;
-
-    Tests t;
-    t.run();
 
     double seed = set_seed;
     mt19937 gen(seed);
@@ -64,6 +64,7 @@ int main() {
             }
             f_hist << system->lengths[system->lengths.size()-1] << ')' << "\n";
         }
+
     }
 
     f_hist.close();
