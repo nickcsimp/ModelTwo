@@ -96,7 +96,6 @@ void Conglomerate::updateAvailableFreeSites(){
 //Finds all head connections
 //Finds all tail connections that can unzip
 void Conglomerate::updateUnbindingLists(){
-    //TODO tail unbinding list is wrong
     tail_unbinding_list.clear();
     head_unbinding_list.clear();
 
@@ -693,5 +692,3 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
     return new_polymer;
 }
 
-//TODO: keep debugging - figure out why different things happen each time?
-//Why is the polymer index and length going mad?

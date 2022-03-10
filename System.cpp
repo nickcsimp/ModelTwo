@@ -234,6 +234,7 @@ bool System::chooseTransition(double seed){
     double random_number_transition = gen();
     double current_rate = external_connection_rate;
 
+    //TODO site zero might be always the final site?
     int chosen_conglomerate_zero = -1;
     int chosen_conglomerate_one = -1;
     int chosen_site_zero = -1;

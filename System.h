@@ -50,7 +50,6 @@ public:
 
     System();
     System(Conglomerate * initial_conglomerate);
-    //TODO system initialised with conglomerate
     void updateRates(int cong);
     bool chooseTransition(double seed);
     void removeConglomerate(int cong);

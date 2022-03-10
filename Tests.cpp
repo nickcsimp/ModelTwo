@@ -1533,6 +1533,5 @@ bool Tests::testTailBindEquilibrium(){
         cout << "Confidence level lower than expected." << endl;
         cout << "Z=" << mean << " for the time spent unconnected in simulation 8." << endl;
     }
-    //TODO process finished with exit code 139
     return true;
 }

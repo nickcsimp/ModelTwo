@@ -29,6 +29,13 @@ int main() {
     Tests tests;
     tests.run();
 */
+
+/*
+ * TODO
+ * Make an input csv set initialisers
+ * Make outputs relative
+ * Merge the python and c into one seamless package
+ */
     set_template_indestructible = true;
     set_monomer_count_is_constant = false;
     set_no_rebinding = false;
@@ -40,9 +47,9 @@ int main() {
     set_G_gen = -5;
     set_M_eff = 100;
     set_monomers_family_zero = 0;
-    set_monomers_family_one = 10000;
-    set_template_length = 100;
-    set_transition_limit = 100000;
+    set_monomers_family_one = 100;
+    set_template_length = 3;
+    set_transition_limit = 1000;
 
     double seed = set_seed;
     mt19937 gen(seed);
