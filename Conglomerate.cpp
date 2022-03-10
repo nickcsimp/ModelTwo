@@ -47,7 +47,7 @@ void Conglomerate::updatePolymersInConglomerate(){
         polymers.clear(); //Clear the lists
         polymer_connections.clear();
         for(auto & con : connections){ //Loop all connections
-            for(int i=0; i<2; i++){ //Loop the polymers
+            for(int i=0; i<2; i++){ //Loop the polymers in connection
                 bool in_list = false; //Used to determine if the polymer is already in the list
                 for(int j=0; j<polymers.size(); j++){ //Loop all polymers in the list
                     if(*polymers[j] == *con->polymers_in_connection[i]){ //If the polymer is already in the list:
@@ -96,7 +96,6 @@ void Conglomerate::updateAvailableFreeSites(){
 //Finds all head connections
 //Finds all tail connections that can unzip
 void Conglomerate::updateUnbindingLists(){
-    //TODO tail unbinding list is wrong
     tail_unbinding_list.clear();
     head_unbinding_list.clear();
 
@@ -311,29 +310,33 @@ void Conglomerate::updateNeighboursUnbindingList(){
     }
     connected_neighbours_list.clear();
     for(int pol=0; pol<polymer_connections.size(); pol++){ //Loop polymers
-        for(int mon = 0; mon<polymer_connections[pol].size()-1; mon++){ //Loop monomers, but not the last as we are checking mon+1
-            //We need mon and mon+1 to both have a connection for them to potentially be unbinding neighbours
-            if(!polymer_connections[pol][mon].empty() && !polymer_connections[pol][mon+1].empty()){
-                //Find which polymers they are connected to
-                int polymer_connected_to_mon = -1;
-                if(*polymer_connections[pol][mon][0]->polymers_in_connection[0] == *polymers[pol]){
-                    polymer_connected_to_mon = 1;
-                } else {
-                    polymer_connected_to_mon = 0;
-                }
+        if(!(set_template_indestructible && polymers[pol]->family==0)) { //If template is indestructible we don't allow family 0 to unbind
+            for (int mon = 0; mon < polymer_connections[pol].size() -
+                                    1; mon++) { //Loop monomers, but not the last as we are checking mon+1
+                //We need mon and mon+1 to both have a connection for them to potentially be unbinding neighbours
+                if (!polymer_connections[pol][mon].empty() && !polymer_connections[pol][mon + 1].empty()) {
+                    //Find which polymers they are connected to
+                    int polymer_connected_to_mon = -1;
+                    if (*polymer_connections[pol][mon][0]->polymers_in_connection[0] == *polymers[pol]) {
+                        polymer_connected_to_mon = 1;
+                    } else {
+                        polymer_connected_to_mon = 0;
+                    }
 
-                int polymer_connected_to_mon_plus_one = -1;
-                if(*polymer_connections[pol][mon+1][0]->polymers_in_connection[0] == *polymers[pol]){
-                    polymer_connected_to_mon_plus_one = 1;
-                } else {
-                    polymer_connected_to_mon_plus_one = 0;
-                }
+                    int polymer_connected_to_mon_plus_one = -1;
+                    if (*polymer_connections[pol][mon + 1][0]->polymers_in_connection[0] == *polymers[pol]) {
+                        polymer_connected_to_mon_plus_one = 1;
+                    } else {
+                        polymer_connected_to_mon_plus_one = 0;
+                    }
 
-                //If the connected polymers are the same then we have unbindable neighbours
-                if(*polymer_connections[pol][mon+1][0]->polymers_in_connection[polymer_connected_to_mon_plus_one] ==
-                            *polymer_connections[pol][mon][0]->polymers_in_connection[polymer_connected_to_mon]){
-                    //They can bind!!
-                    connected_neighbours_list.push_back(new ConnectedNeighbours(polymers[pol], mon));
+                    //If the connected polymers are the same then we have unbindable neighbours
+                    if (*polymer_connections[pol][mon +
+                                                  1][0]->polymers_in_connection[polymer_connected_to_mon_plus_one] ==
+                        *polymer_connections[pol][mon][0]->polymers_in_connection[polymer_connected_to_mon]) {
+                        //They can bind!!
+                        connected_neighbours_list.push_back(new ConnectedNeighbours(polymers[pol], mon));
+                    }
                 }
             }
         }

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include "settings.h"
 #include "Connection.h"
 #include "Polymer.h"
 #include "UnconnectedNeighbours.h"
@@ -19,6 +20,7 @@ using namespace std;
 
 class Conglomerate {
 public:
+    bool backbone_indestructable;
     //Identifies the conglomerate
     int index;
     //Defines all connections in this conglomerate

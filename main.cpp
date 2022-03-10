@@ -1,13 +1,34 @@
 #include <iostream>
 #include <random>
+#include <string>
 #include <fstream>
 #include "Polymer.h"
 #include "System.h"
 #include "Tests.h"
+#include "settings.h"
 
 using namespace std;
 
+bool set_template_indestructible;
+bool set_monomer_count_is_constant; //Only useful if no_rebinding = true
+bool set_no_rebinding;
+double set_seed;
+double set_k;//Polymerisation rate
+double set_k0;//Binding rate
+double set_G_bb;//Backbone forming free energy
+double set_G_spec;//Specific bond forming free energy
+double set_G_gen;//Generic bond forming free energy
+double set_M_eff;//Effective concentration of monomers in zipping
+int set_monomers_family_zero;
+int set_monomers_family_one;
+int set_template_length;
+int set_transition_limit;
+
 int main() {
+/*
+    Tests tests;
+    tests.run();
+*/
 
     string inputFile("./inputList.csv");
 
@@ -22,41 +43,31 @@ int main() {
     }
 
     return 0;
-    Tests t;
-    t.run();
 
-    double seed = 200;
+    double seed = set_seed;
     mt19937 gen(seed);
 
-    //Initialisations
-    double k = 1;//Polymerisation rate
-    double k0 = 1;//Binding rate
-    double G_bb = -16;//Backbone forming free energy
-    double G_spec = -4;//Specific bond forming free energy
-    double G_gen = -8;//Generic bond forming free energy
-    double M_eff = 100;//Effective concentration of monomers in zipping
-
-    vector<double> rates({k, k0});
-    vector<double> energies({G_bb, G_spec, G_gen, M_eff});
-
-    int monomers_family_zero = 0;
-    int monomers_family_one = 100;
-
-    vector<int> free_monomers({monomers_family_zero, monomers_family_one});
-
-    int template_length = 6;
-
-    Polymer * template_polymer = new Polymer(-1, template_length, 0);
-
-    System * system = new System(rates, energies, free_monomers, template_polymer);
+    System * system = new System();
 
     int count = 0;
-    int transition_limit = 10000;
+    int transition_limit = set_transition_limit;
+    bool transitions_possible = true;
+    ofstream f_hist("/Users/nicksimpson/PycharmProjects/MyProject/histogram.txt", ofstream::out);
 
-    while(count<transition_limit){
-        system->chooseTransition(gen());
+    while(count<transition_limit && transitions_possible){
+        transitions_possible = system->chooseTransition(gen());
         count ++;
+        if(f_hist.is_open()){
+            f_hist << '[';
+            for(int i = 0; i< system->lengths.size()-1; i++){
+                f_hist << system->lengths[i] << ", ";
+            }
+            f_hist << system->lengths[system->lengths.size()-1] << ']' << "\n";
+        }
+
     }
+
+    f_hist.close();
 
     ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
 
@@ -160,6 +171,7 @@ int main() {
 
         fw.close();
     }
+
     delete system;
     return 0;
 }

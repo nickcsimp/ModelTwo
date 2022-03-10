@@ -4,7 +4,9 @@
 
 #include "System.h"
 
-System::System(vector<double> rates, vector<double> energies, vector<int> free_monomers, Polymer * template_polymer){
+
+System::System(){
+
     //Initialise index count
     conglomerate_index = -1;
     polymer_index = -1;
@@ -27,41 +29,128 @@ System::System(vector<double> rates, vector<double> energies, vector<int> free_m
 
 
     //Initialise system parameters
-    k = rates[0];
-    k0 = rates[1];
-    G_bb = energies[0];
-    G_spec = energies[1];
-    G_gen = energies[2];
-    M_eff = energies[3];
+    k = set_k;
+    k0 = set_k0;
+    G_bb = set_G_bb;
+    G_spec = set_G_spec;
+    G_gen = set_G_gen;
+    M_eff = set_M_eff;
 
     //Make template polymer into a conglomerate
-    template_polymer->index = ++polymer_index;
+    Polymer * template_polymer = new Polymer(++polymer_index, set_template_length, 0);
     Conglomerate * template_conglomerate = new Conglomerate(template_polymer);
     template_conglomerate->index = ++conglomerate_index;
     addConglomerate(template_conglomerate);
 
+    //Add to lengths list
+    vector<int> victor(set_template_length, 0);
+    victor[set_template_length-1]++;
+    lengths = victor;
 
     //Add all free monomers to the system as polymers within conglomerates
-    for(int i=0; i<free_monomers[0]; i++){
+    for(int i=0; i<set_monomers_family_zero; i++){
         Polymer * new_poly = new Polymer(++polymer_index, 1, 0);
         Conglomerate * new_cong = new Conglomerate(new_poly);
         new_cong->index = ++conglomerate_index;
         addConglomerate(new_cong);
+        lengths[0]++;
     }
-    for(int i=0; i<free_monomers[1]; i++){
+    for(int i=0; i<set_monomers_family_one; i++){
         Polymer * new_poly = new Polymer(++polymer_index, 1, 1);
         Conglomerate * new_cong = new Conglomerate(new_poly);
         new_cong->index = ++conglomerate_index;
         addConglomerate(new_cong);
+        lengths[0]++;
     }
 
+    template_indestructible = set_template_indestructible;
+    monomer_count_is_constant = set_monomer_count_is_constant;
+    no_rebinding = set_no_rebinding;
 
+}
+
+System::System(Conglomerate * initial_conglomerate){
+    //Initialise index count
+    conglomerate_index = -1;
+    polymer_index = -1;
+
+    //Give vectors correct sizes
+    vector<int> empty_vector;
+    vector<vector<int>> vect(6, empty_vector);
+    conglomerate_rates = vect;
+
+    vector<int> v(6, 0);
+    total_connections = v;
+    vector<double> ve(6, 0);
+    transition_rates = ve;
+
+    vector<int> vec(2, 0);
+    total_external_sites = vec;
+
+    vector<vector<int>> vecto(2, empty_vector);
+    external_sites = vecto;
+
+
+    //Initialise system parameters
+    k = set_k;
+    k0 = set_k0;
+    G_bb = set_G_bb;
+    G_spec = set_G_spec;
+    G_gen = set_G_gen;
+    M_eff = set_M_eff;
+
+    int longest_polymer = 0;
+    //Make template conglomerate part of the system
+    for(auto & pol : initial_conglomerate->polymers){
+        pol->index = ++polymer_index;
+        if(pol->length > longest_polymer){
+            longest_polymer = pol->length;
+        }
+    }
+    initial_conglomerate->index = ++conglomerate_index;
+    addConglomerate(initial_conglomerate);
+
+    //Add to lengths list
+    vector<int> victor(longest_polymer, 0);
+    for(auto & pol : initial_conglomerate->polymers){
+        victor[pol->length-1]++;
+    }
+    lengths = victor;
+
+    //Add all free monomers to the system as polymers within conglomerates
+    for(int i=0; i<set_monomers_family_zero; i++){
+        Polymer * new_poly = new Polymer(++polymer_index, 1, 0);
+        Conglomerate * new_cong = new Conglomerate(new_poly);
+        new_cong->index = ++conglomerate_index;
+        addConglomerate(new_cong);
+        lengths[0]++;
+    }
+    for(int i=0; i<set_monomers_family_one; i++){
+        Polymer * new_poly = new Polymer(++polymer_index, 1, 1);
+        Conglomerate * new_cong = new Conglomerate(new_poly);
+        new_cong->index = ++conglomerate_index;
+        addConglomerate(new_cong);
+        lengths[0]++;
+    }
+
+    template_indestructible = set_template_indestructible;
+    monomer_count_is_constant = set_monomer_count_is_constant;
+    no_rebinding = set_no_rebinding;
 }
 
 
 void System::updateRates(int cong){
     total_rate = 0;
 
+    //Remove ext rate from chosen conglomerate
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
+        }
+    }
+
+    //Update external rates
     total_external_sites[0] = total_external_sites[0] - external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] - external_sites[1][cong];
     external_sites[0][cong] = conglomerates[cong]->available_free_sites_list[0].size();
@@ -69,16 +158,13 @@ void System::updateRates(int cong){
     total_external_sites[0] = total_external_sites[0] + external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] + external_sites[1][cong];
 
-    //TODO: is there a better way to update this rather than starting from nought
-    external_connection_rate = 0;
-    //For every conglomerate, we look at the number of family 0 free sites
-    //These can bind with any other conglomerate's family 1 free sites
-    //Therefore two loops to cover entire system
-    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates looking at family 0
-        for(int j=0; j<conglomerates.size(); j++) { //Loop conglomerates looking at family 1
-            if(i!=j){ //Conglomerate can't bind within itself here
-                external_connection_rate = external_connection_rate + external_sites[0][i]*external_sites[1][j]*k0;
-            }
+
+
+    //Add new to total
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate + external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate + external_sites[1][i] * external_sites[0][cong] * k0;
         }
     }
     total_rate = total_rate + external_connection_rate;
@@ -128,9 +214,19 @@ void System::updateRates(int cong){
 }
 
 
-void System::chooseTransition(double seed){
-        //TODO mildly worried that i have forgotten a break? Make sure sites are being chosen fairly
+bool System::chooseTransition(double seed){
     mt19937 gen(seed);
+
+
+    if(total_rate == 0){
+        cout << "No transitions possible" << endl;
+        return false;
+    }
+
+    //Get a time increase
+    double random_number_time = gen();
+    double time_increase = -log(random_number_time/mt19937::max())/total_rate;
+    simulation_time = simulation_time + time_increase;
 
     //First choose a transition
     //External rates is weird, so we see if that is chosen first
@@ -138,14 +234,20 @@ void System::chooseTransition(double seed){
     double random_number_transition = gen();
     double current_rate = external_connection_rate;
 
+    //TODO site zero might be always the final site?
+    int chosen_conglomerate_zero = -1;
+    int chosen_conglomerate_one = -1;
+    int chosen_site_zero = -1;
+    int chosen_site_one = -1;
+    int first = 0;
+    int second = 1;
+
     if((current_rate/total_rate)>=(random_number_transition/mt19937::max())){
         //external transition chosen
         //We need to find two conglomerates: the first will be family 0, the second family 1
 
         //If either family has just one free site, we need to make sure that it is picked
         //Family 0 will be chosen automatically first so just need to check family 1
-        int first = 0;
-        int second = 1;
 
         int family_one_has_sites_in_this_many_conglomerates = 0;
         for(int i=0; i<external_sites[1].size(); i++){
@@ -162,7 +264,6 @@ void System::chooseTransition(double seed){
 
         double random_number_conglomerate_zero = gen();
         double current_conglomerate = 0;
-        int chosen_conglomerate_zero = -1;
 
         for(int cong_zero = 0; cong_zero < conglomerates.size(); cong_zero ++){
             current_conglomerate = current_conglomerate + external_sites[first][cong_zero];
@@ -177,7 +278,6 @@ void System::chooseTransition(double seed){
         total_external_sites[second] = total_external_sites[second] - external_sites[second][chosen_conglomerate_zero];
         double random_number_conglomerate_one = gen();
         current_conglomerate = 0;
-        int chosen_conglomerate_one = -1;
 
         for(int cong_one = 0; cong_one < conglomerates.size(); cong_one ++){
             if(cong_one != chosen_conglomerate_zero) {
@@ -194,10 +294,8 @@ void System::chooseTransition(double seed){
 
         //We need to find which sites we are going to use
         double random_number_site_zero = gen();
-        int chosen_site_zero = -1;
 
         for(int site_zero = 1; site_zero <= external_sites[first][chosen_conglomerate_zero]; site_zero ++){
-
             if((site_zero/external_sites[first][chosen_conglomerate_zero])>=(random_number_site_zero/mt19937::max())){
                 chosen_site_zero = site_zero - 1;
                 break;
@@ -206,10 +304,8 @@ void System::chooseTransition(double seed){
 
         //We need to find which sites we are going to use
         double random_number_site_one = gen();
-        int chosen_site_one = -1;
 
         for(int site_one = 1; site_one <= external_sites[second][chosen_conglomerate_one]; site_one ++){
-
             if((site_one/external_sites[second][chosen_conglomerate_one])>=(random_number_site_one/mt19937::max())){
                 chosen_site_one = site_one - 1;
                 break;
@@ -267,8 +363,44 @@ void System::chooseTransition(double seed){
             vector<Conglomerate *> output = conglomerates[chosen_conglomerate]->chooseHeadUnbinding(chosen_bond);
             if(!output.empty()){
                 //If there is something in the output, the unbinding has split a conglomerate
-                output[0]->index = ++conglomerate_index;
-                addConglomerate(output[0]);
+                if(no_rebinding){
+                    int monomers_to_add;
+                    //if there is no rebinding, we need to find which conglomerate has the template
+                    //we delete the one which hasn't
+                    output[0]->index = ++conglomerate_index;
+                    bool has_template = false;
+                    for(auto & pol: output[0]->polymers){
+                        if(pol->family == 0){
+                            has_template = true;
+                        }
+                    }
+
+                    if(has_template){
+                        //add new
+                        addConglomerate(output[0]);
+                        monomers_to_add = conglomerates[chosen_conglomerate]->polymers[0]->length;
+                        //delete old
+                        removeConglomerate(chosen_conglomerate);
+                    } else {
+                        monomers_to_add = output[0]->polymers[0]->length;
+                        delete output[0];
+                    }
+                    if(monomer_count_is_constant) {
+                        for (int i = 0; i < monomers_to_add; i++) {
+                            //Create new monomers (polymers and conglomerates)
+                            //Put them into the system
+                            Polymer * p = new Polymer(++polymer_index, 1, 1);
+                            Conglomerate * c = new Conglomerate(p);
+                            c->index = ++conglomerate_index;
+                            addConglomerate(c);
+                            lengths[0]++;
+                        }
+                    }
+                } else {
+                    //If there is rebinding we can just allow things to continue
+                    output[0]->index = ++conglomerate_index;
+                    addConglomerate(output[0]);
+                }
             }
         } else if (chosen_transition == 1) {
             //Head Binding
@@ -279,51 +411,103 @@ void System::chooseTransition(double seed){
             vector<Conglomerate *> output = conglomerates[chosen_conglomerate]->chooseTailUnbinding(chosen_bond);
             if(!output.empty()){
                 //If there is something in the output, the unbinding has split a conglomerate
-                output[0]->index = ++conglomerate_index;
-                addConglomerate(output[0]);
+                if(no_rebinding){
+                    int monomers_to_add;
+                    //if there is no rebinding, we need to find which conglomerate has the template
+                    //we delete the one which hasn't
+                    output[0]->index = ++conglomerate_index;
+                    bool has_template = false;
+                    for(auto & pol: output[0]->polymers){
+                        if(pol->family == 0){
+                            has_template = true;
+                        }
+                    }
+
+                    if(has_template){
+                        //add new
+                        addConglomerate(output[0]);
+                        monomers_to_add = conglomerates[chosen_conglomerate]->polymers[0]->length;
+                        //delete old
+                        removeConglomerate(chosen_conglomerate);
+                    } else {
+                        monomers_to_add = output[0]->polymers[0]->length;
+                        delete output[0];
+                    }
+                    if(monomer_count_is_constant) {
+                        for (int i = 0; i < monomers_to_add; i++) {
+                            //Create new monomers (polymers and conglomerates)
+                            Polymer * p = new Polymer(++polymer_index, 1, 1);
+                            Conglomerate * c = new Conglomerate(p);
+                            c->index = ++conglomerate_index;
+                            addConglomerate(c);
+                            lengths[0]++;
+                        }
+                    }
+                } else {
+                    //If there is rebinding we can just allow things to continue
+                    output[0]->index = ++conglomerate_index;
+                    addConglomerate(output[0]);
+                }
             }
         } else if (chosen_transition == 3) {
             // Tail binding
             conglomerates[chosen_conglomerate]->chooseTailBinding(chosen_bond);
         } else if (chosen_transition == 4) {
             // Unbind some connected neighbours
+            //Remove lengths of polymer from histogram
+            Polymer * old_polymer = conglomerates[chosen_conglomerate]->connected_neighbours_list[chosen_bond]->polymer;
+            lengths[old_polymer->length - 1]--;
 
+            //Do transition and get new polymer
             Polymer * new_polymer = conglomerates[chosen_conglomerate]->chooseNeighboursUnbind(chosen_bond);
             new_polymer->index = ++polymer_index;
+
+            //Add lengths to histogram
+            lengths[old_polymer->length-1]++;
+            lengths[new_polymer->length-1]++;
+
         } else if(chosen_transition == 5){
             //Bind some unconnected neighbours
+
+            //Get polymers involved to remove from length histogram and join again
+            Polymer * p_one = conglomerates[chosen_conglomerate]->unconnected_neighbours_list[chosen_bond]->polymer_one;
+            Polymer * p_two = conglomerates[chosen_conglomerate]->unconnected_neighbours_list[chosen_bond]->polymer_two;
+            lengths[p_one->length-1]--;
+            lengths[p_two->length-1]--;
+            if(lengths.size()<p_one->length+p_two->length){
+                int length_difference = p_one->length+p_two->length-lengths.size();
+                for(int i=0; i<length_difference; i++){
+                    lengths.push_back(0);
+                }
+            }
+            lengths[p_one->length+p_two->length-1]++;
+
             Polymer * removed_polymer = conglomerates[chosen_conglomerate]->chooseNeighboursBind(chosen_bond);
             delete removed_polymer;
         }
         updateRates(chosen_conglomerate);
     }
-
+    return true;
 }
 
 void System::removeConglomerate(int cong){
+    total_rate = 0;
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
+        }
+    }
     delete conglomerates[cong];
     conglomerates.erase(conglomerates.begin()+cong);
 
-    total_rate = 0;
+    total_rate = total_rate + external_connection_rate;
 
     total_external_sites[0] = total_external_sites[0] - external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] - external_sites[1][cong];
     external_sites[0].erase(external_sites[0].begin()+cong);
     external_sites[1].erase(external_sites[1].begin()+cong);
 
-    //TODO: is there a better way to update this rather than starting from nought
-    external_connection_rate = 0;
-    //For every conglomerate, we look at the number of family 0 free sites
-    //These can bind with any other conglomerate's family 1 free sites
-    //Therefore two loops to cover entire system
-    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates looking at family 0
-        for(int j=0; j<conglomerates.size(); j++) { //Loop conglomerates looking at family 1
-            if(i!=j){ //Conglomerate can't bind within itself here
-                external_connection_rate = external_connection_rate + external_sites[0][i]*external_sites[1][j]*k0;
-            }
-        }
-    }
-    total_rate = total_rate + external_connection_rate;
 
     transition_rates[0] = transition_rates[0] - conglomerate_rates[0][cong]*(k0*exp(G_spec+G_gen));
     total_connections[0] = total_connections[0] - conglomerate_rates[0][cong];
@@ -369,16 +553,10 @@ void System::addConglomerate(Conglomerate * new_cong){
     total_external_sites[0] = total_external_sites[0] + external_sites[0][cong];
     total_external_sites[1] = total_external_sites[1] + external_sites[1][cong];
 
-    //TODO: is there a better way to update this rather than starting from nought
-    external_connection_rate = 0;
-    //For every conglomerate, we look at the number of family 0 free sites
-    //These can bind with any other conglomerate's family 1 free sites
-    //Therefore two loops to cover entire system
-    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates looking at family 0
-        for(int j=0; j<conglomerates.size(); j++) { //Loop conglomerates looking at family 1
-            if(i!=j){ //Conglomerate can't bind within itself here
-                external_connection_rate = external_connection_rate + external_sites[0][i]*external_sites[1][j]*k0;
-            }
+    for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+        if (i != cong) { //Conglomerate can't bind within itself here
+            external_connection_rate = external_connection_rate + external_sites[0][i] * external_sites[1][cong] * k0;
+            external_connection_rate = external_connection_rate + external_sites[1][i] * external_sites[0][cong] * k0;
         }
     }
     total_rate = total_rate + external_connection_rate;
