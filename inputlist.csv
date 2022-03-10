@@ -1,0 +1,2 @@
+seed,k,k0,Gbb,Gspec,Ggen,Meff,MonomersOne,MonomersTwo,LengthPolymer,EndTime,EndStep,TemplateIndestructable,ConstantMonomerCount,NoRebinding,RunTests
+200,1,1,-16,-4,-8,100,0,100,6,1000,1000,TRUE,FALSE,FALSE,FALSE

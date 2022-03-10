@@ -23,26 +23,81 @@ int set_monomers_family_zero;
 int set_monomers_family_one;
 int set_template_length;
 int set_transition_limit;
+int set_time_limit;
+bool set_run_tests;
 
-int main() {
-/*
-    Tests tests;
-    tests.run();
-*/
-
-    string inputFile("./inputList.csv");
-
+void read_input(string filename){
+    string input("inputlist.csv");
     string line;
     string delimiter = ",";
     ifstream fin;
-    fin.open(inputFile);
-    if(!fin.is_open()){
-        cout << "Input file could not be opened." << endl;
-    } else {
-        cout << "Yay" << endl;
+    fin.open(input);
+    if (fin.fail()) {
+        // file could not be opened
+
+        cerr << "Input file could not be opened. \n Exiting... \n\n";
+        exit(EXIT_FAILURE);
+    }
+    int line_counter = 0;
+    while (!fin.eof()) {
+        fin >> line;
+        line += ", ";
+        if(line_counter == 1){
+            size_t pos = 0;
+            string token;
+            int variable_count = 0;
+            while ((pos = line.find(delimiter)) != std::string::npos) {
+                pos = line.find(delimiter);
+                token = line.substr(0, pos);
+                if(variable_count == 0){
+                    set_seed = stod(token);
+                } else if(variable_count == 1){
+                    set_k = stod(token);
+                } else if(variable_count == 2){
+                    set_k0 = stod(token);
+                } else if(variable_count == 3){
+                    set_G_bb = stod(token);
+                } else if(variable_count == 4){
+                    set_G_spec = stod(token);
+                } else if(variable_count == 5){
+                    set_G_gen = stod(token);
+                } else if(variable_count == 6){
+                    set_M_eff = stod(token);
+                } else if(variable_count == 7){
+                    set_monomers_family_zero = stoi(token);
+                } else if(variable_count == 8){
+                    set_monomers_family_one = stoi(token);
+                } else if(variable_count == 9){
+                    set_template_length = stoi(token);
+                } else if(variable_count == 10){
+                    set_time_limit = stod(token);
+                } else if(variable_count == 11){
+                    set_transition_limit = stoi(token);
+                } else if(variable_count == 12){
+                    set_template_indestructible = (token == "TRUE");
+                } else if(variable_count == 13){
+                    set_monomer_count_is_constant= (token == "TRUE");
+                } else if(variable_count == 14){
+                    set_no_rebinding = (token == "TRUE");
+                } else if(variable_count == 15){
+                    set_run_tests = (token == "TRUE");
+                }
+                variable_count++;
+                line.erase(0, pos + delimiter.length());
+            }
+        }
+        line_counter++;
     }
 
-    return 0;
+}
+
+int main() {
+    read_input("inputlist.csv");
+
+    if(set_run_tests){
+        Tests tests;
+        tests.run();
+    }
 
     double seed = set_seed;
     mt19937 gen(seed);
@@ -52,7 +107,7 @@ int main() {
     int count = 0;
     int transition_limit = set_transition_limit;
     bool transitions_possible = true;
-    ofstream f_hist("/Users/nicksimpson/PycharmProjects/MyProject/histogram.txt", ofstream::out);
+    ofstream f_hist("histogram.txt", ofstream::out);
 
     while(count<transition_limit && transitions_possible){
         transitions_possible = system->chooseTransition(gen());
@@ -69,7 +124,7 @@ int main() {
 
     f_hist.close();
 
-    ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
+    ofstream fw("input.txt", ofstream::out);
 
     if(fw.is_open()){
         //Creating all the nodes and joining polymers
