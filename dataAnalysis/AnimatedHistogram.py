@@ -57,4 +57,4 @@ def animate_histogram(inputFileName):
 
     ani = animation.FuncAnimation(fig, prepare_animation(bar_container), 500,
                                   repeat=False, blit=True)
-    ani.save('myAnimation.gif', fps=30)
+    ani.save('figures/myAnimation.gif', fps=30)

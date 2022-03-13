@@ -20,4 +20,4 @@ def create_contour_plot(inputFileName):
     # Generate a color mapping of the levels we've specified
     plt.contourf(y, x, z, cmap=cm.Reds)
     plt.colorbar()
-    plt.show()
+    plt.savefig("figures/distributions.png")

@@ -32,7 +32,7 @@ bool set_make_length_distribution_plots;
 bool set_make_images;
 
 void read_input(string filename){
-    string input("inputlist.csv");
+    string input(filename);
     string line;
     string delimiter = ",";
     ifstream fin;
@@ -124,7 +124,7 @@ int main() {
     bool transitions_possible = true;
     ofstream f_hist;
     if(set_make_animated_histogram || set_make_final_histogram) {
-        f_hist.open("histogram.txt", ofstream::out);
+        f_hist.open("dataAnalysis/histogram.txt", ofstream::out);
     }
 
     while(count<transition_limit && transitions_possible){
@@ -144,7 +144,7 @@ int main() {
     f_hist.close();
 
     if(set_make_images) {
-        ofstream fw("input.txt", ofstream::out);
+        ofstream fw("dataAnalysis/input.txt", ofstream::out);
         if (fw.is_open()) {
             //Creating all the nodes and joining polymers
             for (int cong = 0; cong < system->conglomerates.size(); cong++) {
@@ -252,7 +252,7 @@ int main() {
 
     delete system;
 
-    ofstream f_python_main("main.py", ofstream::out);
+    ofstream f_python_main("dataAnalysis/main.py", ofstream::out);
     f_python_main << "if __name__ == '__main__':" << "\n";
     if(set_make_images){
         f_python_main << "    import Images" << "\n";
@@ -270,16 +270,16 @@ int main() {
      */
 
     if(set_make_images){
-        f_python_main << "\n" << "    Images.create_plots('input.txt', 'Images')";
+        f_python_main << "\n" << "    Images.create_plots('dataAnalysis/input.txt', 'figures/Images')";
     }
     if(set_make_final_histogram){
-        f_python_main << "\n" << "    Histogram.create_histogram('histogram.txt')";
+        f_python_main << "\n" << "    Histogram.create_histogram('dataAnalysis/histogram.txt')";
     }
     if(set_make_average_length_graph){
-        f_python_main << "\n" << "    Histogram.create_average_length_graph('histogram.txt')";
+        f_python_main << "\n" << "    Histogram.create_average_length_graph('dataAnalysis/histogram.txt')";
     }
     if(set_make_animated_histogram){
-        f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('histogram.txt')";
+        f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('dataAnalysis/histogram.txt')";
     }
     /*
     if(set_make_length_distribution_plots){

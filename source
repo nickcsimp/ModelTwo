@@ -2,6 +2,10 @@
 
 module load g++ 
 
-g++ -std=c++11 -o ModelTwo main.cpp Conglomerate.cpp Conglomerate.h Connection.cpp Connection.h Polymer.cpp Polymer.h FreeSite.cpp FreeSite.h UnconnectedNeighbours.cpp UnconnectedNeighbours.h ConnectedNeighbours.cpp ConnectedNeighbours.h System.cpp System.h Tests.cpp Tests.h settings.cpp settings.h
+g++ -std=c++11 -o ModelTwo simulation/main.cpp simulation/Conglomerate.cpp simulation/Conglomerate.h simulation/Connection.cpp simulation/Connection.h simulation/Polymer.cpp simulation/Polymer.h simulation/FreeSite.cpp simulation/FreeSite.h simulation/UnconnectedNeighbours.cpp simulation/UnconnectedNeighbours.h simulation/ConnectedNeighbours.cpp simulation/ConnectedNeighbours.h simulation/ystem.cpp simulation/System.h simulation/Tests.cpp simulation/Tests.h simulation/settings.cpp simulation/settings.h
 
 ./ModelTwo
+
+module load anaconda3/personal
+
+python dataAnalysis/main.py

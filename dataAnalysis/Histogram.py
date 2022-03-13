@@ -16,7 +16,7 @@ def create_histogram(inputFileName):
                 mylist.append(i+1)
 
     plt.hist(mylist, len(final_line), color="green", ec="yellow")
-    plt.show()
+    plt.savefig("figures/finalHistogram.png")
 
 
 def create_average_length_graph(inputFileName):
@@ -36,4 +36,4 @@ def create_average_length_graph(inputFileName):
         line = f.readline()
 
     plt.plot(average_length)
-    plt.show()
+    plt.savefig("figures/avgLengths.png")
