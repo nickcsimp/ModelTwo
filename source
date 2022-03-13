@@ -2,7 +2,7 @@
 
 module load g++ 
 
-g++ -std=c++11 -o ModelTwo simulation/main.cpp simulation/Conglomerate.cpp simulation/Conglomerate.h simulation/Connection.cpp simulation/Connection.h simulation/Polymer.cpp simulation/Polymer.h simulation/FreeSite.cpp simulation/FreeSite.h simulation/UnconnectedNeighbours.cpp simulation/UnconnectedNeighbours.h simulation/ConnectedNeighbours.cpp simulation/ConnectedNeighbours.h simulation/ystem.cpp simulation/System.h simulation/Tests.cpp simulation/Tests.h simulation/settings.cpp simulation/settings.h
+g++ -std=c++11 -o ModelTwo simulation/main.cpp simulation/Conglomerate.cpp simulation/Conglomerate.h simulation/Connection.cpp simulation/Connection.h simulation/Polymer.cpp simulation/Polymer.h simulation/FreeSite.cpp simulation/FreeSite.h simulation/UnconnectedNeighbours.cpp simulation/UnconnectedNeighbours.h simulation/ConnectedNeighbours.cpp simulation/ConnectedNeighbours.h simulation/System.cpp simulation/System.h simulation/Tests.cpp simulation/Tests.h simulation/settings.cpp simulation/settings.h
 
 ./ModelTwo
 
