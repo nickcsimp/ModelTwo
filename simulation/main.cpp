@@ -123,14 +123,14 @@ int main() {
     int transition_limit = set_transition_limit;
     bool transitions_possible = true;
     ofstream f_hist;
-    if(set_make_animated_histogram || set_make_final_histogram) {
+    if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {
         f_hist.open("dataAnalysis/histogram.txt", ofstream::out);
     }
 
     while(count<transition_limit && transitions_possible){
         transitions_possible = system->chooseTransition(gen());
         count ++;
-        if(set_make_animated_histogram || set_make_final_histogram) {
+        if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {
             if(f_hist.is_open()){
                 f_hist << '[';
                 for(int i = 0; i< system->lengths.size()-1; i++){
