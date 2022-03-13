@@ -25,6 +25,11 @@ int set_template_length;
 int set_transition_limit;
 int set_time_limit;
 bool set_run_tests;
+bool set_make_animated_histogram;
+bool set_make_final_histogram;
+bool set_make_average_length_graph;
+bool set_make_length_distribution_plots;
+bool set_make_images;
 
 void read_input(string filename){
     string input("inputlist.csv");
@@ -81,6 +86,16 @@ void read_input(string filename){
                     set_no_rebinding = (token == "TRUE");
                 } else if(variable_count == 15){
                     set_run_tests = (token == "TRUE");
+                } else if(variable_count == 16){
+                    set_make_animated_histogram = (token == "TRUE");
+                } else if(variable_count == 17){
+                    set_make_final_histogram = (token == "TRUE");
+                } else if(variable_count == 18){
+                    set_make_average_length_graph = (token == "TRUE");
+                } else if(variable_count == 19){
+                    set_make_length_distribution_plots = (token == "TRUE");
+                } else if(variable_count == 20){
+                    set_make_images = (token == "TRUE");
                 }
                 variable_count++;
                 line.erase(0, pos + delimiter.length());
@@ -107,126 +122,170 @@ int main() {
     int count = 0;
     int transition_limit = set_transition_limit;
     bool transitions_possible = true;
-    ofstream f_hist("histogram.txt", ofstream::out);
+    ofstream f_hist;
+    if(set_make_animated_histogram || set_make_final_histogram) {
+        f_hist.open("histogram.txt", ofstream::out);
+    }
 
     while(count<transition_limit && transitions_possible){
         transitions_possible = system->chooseTransition(gen());
         count ++;
-        if(f_hist.is_open()){
-            f_hist << '[';
-            for(int i = 0; i< system->lengths.size()-1; i++){
-                f_hist << system->lengths[i] << ", ";
+        if(set_make_animated_histogram || set_make_final_histogram) {
+            if(f_hist.is_open()){
+                f_hist << '[';
+                for(int i = 0; i< system->lengths.size()-1; i++){
+                    f_hist << system->lengths[i] << ", ";
+                }
+                f_hist << system->lengths[system->lengths.size()-1] << ']' << "\n";
             }
-            f_hist << system->lengths[system->lengths.size()-1] << ']' << "\n";
         }
-
     }
 
     f_hist.close();
 
-    ofstream fw("input.txt", ofstream::out);
+    if(set_make_images) {
+        ofstream fw("input.txt", ofstream::out);
+        if (fw.is_open()) {
+            //Creating all the nodes and joining polymers
+            for (int cong = 0; cong < system->conglomerates.size(); cong++) {
+                //We only want to view the things that are interesting
+                //If there is a single monomer or a dimer then we ignore it
+                if (system->conglomerates[cong]->polymers.size() == 1 &&
+                    system->conglomerates[cong]->polymers[0]->length == 1) {
+                    //TODO make a monomer image?
+                    //Monomer
+                } else if (system->conglomerates[cong]->polymers.size() == 2 &&
+                           system->conglomerates[cong]->polymers[0]->length == 1 &&
+                           system->conglomerates[cong]->polymers[1]->length == 1) {
+                    //Dimer
+                    //TODO make a dimer image?
+                } else {
 
-    if(fw.is_open()){
-        //Creating all the nodes and joining polymers
-        for(int cong = 0; cong<system->conglomerates.size(); cong ++) {
-            //We only want to view the things that are interesting
-            //If there is a single monomer or a dimer then we ignore it
-            if (system->conglomerates[cong]->polymers.size() == 1 &&
-                system->conglomerates[cong]->polymers[0]->length == 1) {
-                //TODO make a monomer image?
-                //Monomer
-            } else if (system->conglomerates[cong]->polymers.size() == 2 &&
-                       system->conglomerates[cong]->polymers[0]->length == 1 &&
-                       system->conglomerates[cong]->polymers[1]->length == 1) {
-                //Dimer
-                //TODO make a dimer image?
-            } else {
-
-                int mon_index = -1;
-                int pol_index = -1;
-                bool is_first = true;
-                for (int i = 0; i < system->conglomerates[cong]->polymers.size(); i++) {
-                    system->conglomerates[cong]->polymers[i]->index = ++pol_index;
-                    if (is_first) {
-                        fw << "([";
-                        is_first = false;
-                    } else {
-                        fw << ", [";
+                    int mon_index = -1;
+                    int pol_index = -1;
+                    bool is_first = true;
+                    for (int i = 0; i < system->conglomerates[cong]->polymers.size(); i++) {
+                        system->conglomerates[cong]->polymers[i]->index = ++pol_index;
+                        if (is_first) {
+                            fw << "([";
+                            is_first = false;
+                        } else {
+                            fw << ", [";
+                        }
+                        for (int j = 0; j < system->conglomerates[cong]->polymers[i]->length - 1; j++) {
+                            fw << ++mon_index << ',';
+                        }
+                        fw << ++mon_index << ']';
                     }
-                    for (int j = 0; j < system->conglomerates[cong]->polymers[i]->length - 1; j++) {
-                        fw << ++mon_index << ',';
+                    fw << ')' << "\n";
+
+                    is_first = true;
+                    fw << '(';
+                    for (auto &poly: system->conglomerates[cong]->polymers) {
+                        if (is_first) {
+                            fw << poly->family;
+                            is_first = false;
+                        } else {
+                            fw << ", " << poly->family;
+                        }
                     }
-                    fw << ++mon_index << ']';
-                }
-                fw << ')' << "\n";
-
-                is_first = true;
-                fw << '(';
-                for (auto &poly: system->conglomerates[cong]->polymers) {
-                    if (is_first) {
-                        fw << poly->family;
-                        is_first = false;
-                    } else {
-                        fw << ", " << poly->family;
-                    }
-                }
-                fw << ')' << "\n";
+                    fw << ')' << "\n";
 
 
 
-                //Creating inter-polymer connection polymers
-                is_first = true;
-                fw << '[';
-                for (int poly = 0; poly < system->conglomerates[cong]->polymer_connections.size(); poly++) {
-                    for (int mon = 0; mon < system->conglomerates[cong]->polymer_connections[poly].size(); mon++) {
-                        if (!system->conglomerates[cong]->polymer_connections[poly][mon].empty()) {
-                            if (is_first) {
-                                //We need to not have a comma before the first connection
-                                fw << "(Polymers["
-                                   << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[0]->index;
-                                fw << "], Polymers["
-                                   << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[1]->index;
-                                fw << "])";
-                                is_first = false;
-                            } else {
-                                fw << ", (Polymers["
-                                   << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[0]->index;
-                                fw << "], Polymers["
-                                   << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[1]->index;
-                                fw << "])";
+                    //Creating inter-polymer connection polymers
+                    is_first = true;
+                    fw << '[';
+                    for (int poly = 0; poly < system->conglomerates[cong]->polymer_connections.size(); poly++) {
+                        for (int mon = 0; mon < system->conglomerates[cong]->polymer_connections[poly].size(); mon++) {
+                            if (!system->conglomerates[cong]->polymer_connections[poly][mon].empty()) {
+                                if (is_first) {
+                                    //We need to not have a comma before the first connection
+                                    fw << "(Polymers["
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[0]->index;
+                                    fw << "], Polymers["
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[1]->index;
+                                    fw << "])";
+                                    is_first = false;
+                                } else {
+                                    fw << ", (Polymers["
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[0]->index;
+                                    fw << "], Polymers["
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->polymers_in_connection[1]->index;
+                                    fw << "])";
+                                }
                             }
                         }
                     }
-                }
-                fw << ']' << "\n";
-                //Creating inter-polymer connection indexes
-                is_first = true;
-                fw << '[';
-                for (int poly = 0; poly < system->conglomerates[cong]->polymer_connections.size(); poly++) {
-                    for (int mon = 0; mon < system->conglomerates[cong]->polymer_connections[poly].size(); mon++) {
-                        if (!system->conglomerates[cong]->polymer_connections[poly][mon].empty()) {
-                            if (is_first) {
-                                //We need to not have a comma before the first connection
-                                fw << '(' << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[0];
-                                fw << ',' << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[1]
-                                   << ")";
-                                is_first = false;
-                            } else {
-                                fw << ", ("
-                                   << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[0];
-                                fw << ',' << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[1]
-                                   << ")";
+                    fw << ']' << "\n";
+                    //Creating inter-polymer connection indexes
+                    is_first = true;
+                    fw << '[';
+                    for (int poly = 0; poly < system->conglomerates[cong]->polymer_connections.size(); poly++) {
+                        for (int mon = 0; mon < system->conglomerates[cong]->polymer_connections[poly].size(); mon++) {
+                            if (!system->conglomerates[cong]->polymer_connections[poly][mon].empty()) {
+                                if (is_first) {
+                                    //We need to not have a comma before the first connection
+                                    fw << '('
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[0];
+                                    fw << ','
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[1]
+                                       << ")";
+                                    is_first = false;
+                                } else {
+                                    fw << ", ("
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[0];
+                                    fw << ','
+                                       << system->conglomerates[cong]->polymer_connections[poly][mon][0]->indexes[1]
+                                       << ")";
+                                }
                             }
                         }
                     }
+                    fw << ']' << endl;
                 }
-                fw << ']' << endl;
             }
-        }
 
-        fw.close();
+            fw.close();
+        }
     }
 
     delete system;
+
+    ofstream f_python_main("main.py", ofstream::out);
+    f_python_main << "if __name__ == '__main__':" << "\n";
+    if(set_make_images){
+        f_python_main << "    import Images" << "\n";
+    }
+    if(set_make_final_histogram || set_make_average_length_graph){
+        f_python_main << "    import Histogram" << "\n";
+    }
+    if(set_make_animated_histogram){
+        f_python_main << "    import AnimatedHistogram" << "\n";
+    }
+    /*
+    if(set_make_length_distribution_plots){
+        f_python_main << "import Distribution" << "\n";
+    }
+     */
+
+    if(set_make_images){
+        f_python_main << "\n" << "    Images.create_plots('input.txt', 'Images')";
+    }
+    if(set_make_final_histogram){
+        f_python_main << "\n" << "    Histogram.create_histogram('histogram.txt')";
+    }
+    if(set_make_average_length_graph){
+        f_python_main << "\n" << "    Histogram.create_average_length_graph('histogram.txt')";
+    }
+    if(set_make_animated_histogram){
+        f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('histogram.txt')";
+    }
+    /*
+    if(set_make_length_distribution_plots){
+        f_python_main << "Distribution.create_contour_plot" << "\n";
+    }
+     */
+
     return 0;
 }
