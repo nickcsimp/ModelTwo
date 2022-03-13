@@ -85,6 +85,7 @@ int main() {
                 f_hist << system->lengths[system->lengths.size() - 1] << ']' << "\n";
             }
         }
+
     }
 
     f_hist.close();

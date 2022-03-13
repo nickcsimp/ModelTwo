@@ -691,4 +691,3 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
     updateConglomerate();
     return new_polymer;
 }
-
