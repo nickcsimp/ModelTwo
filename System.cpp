@@ -66,7 +66,6 @@ System::System(){
     template_indestructible = set_template_indestructible;
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
-
 }
 
 System::System(Conglomerate * initial_conglomerate){

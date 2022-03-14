@@ -50,12 +50,12 @@ int main() {
 
     set_run_tests = false;
     set_make_animated_histogram = false;
-    set_make_final_histogram = true;
-    set_make_average_length_graph = true;
-    set_make_length_distribution_plots = false;
+    set_make_final_histogram = false;
+    set_make_average_length_graph = false;
+    set_make_length_distribution_plots = true;
     set_make_images = false;
 
-/*
+
     if(set_run_tests) {
         Tests tests;
         tests.run();
@@ -76,6 +76,7 @@ int main() {
     while(count<transition_limit && transitions_possible){
         transitions_possible = system->chooseTransition(gen());
         count ++;
+
         if(set_make_animated_histogram || set_make_final_histogram) {
             if (f_hist.is_open()) {
                 f_hist << '[';
@@ -85,10 +86,30 @@ int main() {
                 f_hist << system->lengths[system->lengths.size() - 1] << ']' << "\n";
             }
         }
-
     }
 
     f_hist.close();
+
+    if(set_make_length_distribution_plots) {
+
+        //find average length of the system at the end
+        double length_count = 0;
+        double polymer_count = 0;
+        for (int i = 0; i < system->lengths.size(); i++) {
+            length_count = length_count + (i + 1) * system->lengths[i];
+            polymer_count = polymer_count + system->lengths[i];
+        }
+        double average_length = length_count / polymer_count;
+
+        ofstream myfile;
+        myfile.open("/Users/nicksimpson/CLionProjects/ModelTwo/LengthDist.csv", std::ios_base::app);
+        if (myfile.is_open()) {
+            myfile << set_G_gen << ',' << set_G_bb << ',' << average_length << "\n";
+        }
+        myfile.close();
+        //TODO think of file names - gspec_$g_spec$.csv????
+        //TODO create files with arrayjob?? - need to initialise x,y,z and file creation
+    }
 
     if(set_make_images) {
         ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
@@ -197,7 +218,7 @@ int main() {
             fw.close();
         }
     }
-    */
+
 
     ofstream f_python_main("/Users/nicksimpson/PycharmProjects/MyProject/main.py", ofstream::out);
     f_python_main << "if __name__ == '__main__':" << "\n";
@@ -210,11 +231,11 @@ int main() {
     if(set_make_animated_histogram){
         f_python_main << "    import AnimatedHistogram" << "\n";
     }
-    /*
+
     if(set_make_length_distribution_plots){
         f_python_main << "import LengthDistribution" << "\n";
     }
-     */
+
 
     if(set_make_images){
         f_python_main << "\n" << "    Images.create_plots('input.txt', 'Images')";
@@ -228,12 +249,12 @@ int main() {
     if(set_make_animated_histogram){
         f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('histogram.txt')";
     }
-    /*
+
     if(set_make_length_distribution_plots){
         f_python_main << "LengthDistribution.build" << "\n";
     }
-     */
 
-    //delete system;
+
+    delete system;
     return 0;
 }
