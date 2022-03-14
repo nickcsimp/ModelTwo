@@ -106,8 +106,15 @@ void read_input(string filename){
 
 }
 
-int main() {
-    read_input("inputlist.csv");
+int main(int argc, char *argv[]) {
+
+    if(argc!=1){
+        cout << "No input file." << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    string input_file_name = argv[0];
+    read_input(input_file_name);
 
     if(set_run_tests){
         Tests tests;
@@ -124,7 +131,7 @@ int main() {
     bool transitions_possible = true;
     ofstream f_hist;
     if(set_make_animated_histogram || set_make_final_histogram) {
-        f_hist.open("dataAnalysis/histogram.txt", ofstream::out);
+        f_hist.open("histogram.txt", ofstream::out);
     }
 
     while(count<transition_limit && transitions_possible){
@@ -144,7 +151,7 @@ int main() {
     f_hist.close();
 
     if(set_make_images) {
-        ofstream fw("dataAnalysis/input.txt", ofstream::out);
+        ofstream fw("input.txt", ofstream::out);
         if (fw.is_open()) {
             //Creating all the nodes and joining polymers
             for (int cong = 0; cong < system->conglomerates.size(); cong++) {
@@ -252,8 +259,10 @@ int main() {
 
     delete system;
 
-    ofstream f_python_main("dataAnalysis/main.py", ofstream::out);
+    ofstream f_python_main("main.py", ofstream::out);
     f_python_main << "if __name__ == '__main__':" << "\n";
+    f_python_main << "    import sys" << "\n";
+    f_python_main << "    sys.path.append('../dataAnalysis')" << "\n";
     if(set_make_images){
         f_python_main << "    import Images" << "\n";
     }
@@ -270,16 +279,16 @@ int main() {
      */
 
     if(set_make_images){
-        f_python_main << "\n" << "    Images.create_plots('dataAnalysis/input.txt', 'figures/Images')";
+        f_python_main << "\n" << "    Images.create_plots('input.txt', 'figures/Images')";
     }
     if(set_make_final_histogram){
-        f_python_main << "\n" << "    Histogram.create_histogram('dataAnalysis/histogram.txt')";
+        f_python_main << "\n" << "    Histogram.create_histogram('histogram.txt')";
     }
     if(set_make_average_length_graph){
-        f_python_main << "\n" << "    Histogram.create_average_length_graph('dataAnalysis/histogram.txt')";
+        f_python_main << "\n" << "    Histogram.create_average_length_graph('histogram.txt')";
     }
     if(set_make_animated_histogram){
-        f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('dataAnalysis/histogram.txt')";
+        f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('histogram.txt')";
     }
     /*
     if(set_make_length_distribution_plots){
