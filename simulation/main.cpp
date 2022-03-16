@@ -108,7 +108,7 @@ void read_input(string filename){
 
 int main(int argc, char *argv[]) {
 
-    if(argc!=1){
+    if(argc!=2){
         cout << "No input file." << endl;
         exit(EXIT_FAILURE);
     }
