@@ -59,6 +59,7 @@ do
 		# make the directory and create an input file in it, with the header
 		mkdir "./$i"
 		echo $header >> ./$i/input.csv
+		mkdir "./$i/figures"
 	fi
 done
 
@@ -94,7 +95,9 @@ fi
         echo "cd ""$""subdir"
         echo 'runcommand="'$sim" ""$"'{subdir}/input.csv"'
         echo "module load anaconda3/personal"
-        echo "python dataAnalysis/main.py"
+        echo 'runcommand="python dataAnalysis/main.py"'
+	echo "timeout "$(( $walltimemins+60*$walltimehrs -2))"m ""$""runcommand"
+	echo 'runcommand="python dataAnalysis/main.py"'
 	echo "timeout "$(( $walltimemins+60*$walltimehrs -2))"m ""$""runcommand"
 } >> ArrayJob.sh
 
