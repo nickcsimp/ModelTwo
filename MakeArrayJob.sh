@@ -97,8 +97,8 @@ fi
 	echo "timeout "$(( $walltimemins+60*$walltimehrs -2))"m ""$""runcommand"
 } >> ArrayJob.sh
 
-echo "Submitting array job to pqtouldrid private queue..."
+echo "Submitting array job..."
 # Finally we submit the array job to our private queue
-firstjob=$(qsub -q pqtouldrid ${maindirectory}/ArrayJob.sh)
+firstjob=$(qsub ${maindirectory}/ArrayJob.sh)
 
 echo "Done. type qstat -t to check the status of your array job"
