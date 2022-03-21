@@ -94,15 +94,11 @@ fi
         echo "subdir=""$""{maindirectory}/""$""PBS_ARRAY_INDEX/"
         echo "cd ""$""subdir"
         echo 'runcommand="'$sim" ""$"'{subdir}/input.csv"'
-        echo "module load anaconda3/personal"
-        echo 'runcommand="python dataAnalysis/main.py"'
-	echo "timeout "$(( $walltimemins+60*$walltimehrs -2))"m ""$""runcommand"
-	echo 'runcommand="python dataAnalysis/main.py"'
 	echo "timeout "$(( $walltimemins+60*$walltimehrs -2))"m ""$""runcommand"
 } >> ArrayJob.sh
 
 echo "Submitting array job to pqtouldrid private queue..."
 # Finally we submit the array job to our private queue
-firstjob=$(qsub ${maindirectory}/ArrayJob.sh -q pqtouldrid)
+firstjob=$(qsub -q pqtouldrid ${maindirectory}/ArrayJob.sh)
 
 echo "Done. type qstat -t to check the status of your array job"
