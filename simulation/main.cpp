@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    string input_file_name = argv[0];
+    string input_file_name = argv[1];
     read_input(input_file_name);
 
     if(set_run_tests){
