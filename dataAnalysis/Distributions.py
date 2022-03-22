@@ -14,10 +14,10 @@ def create_contour_plot(inputFileName):
 
     Ggen, Gbb = np.meshgrid(x_unique, y_unique)
     # Initialize plot objects
-    rcParams['figure.figsize'] = 5, 5 # sets plot size
+    rcParams['figure.figsize'] = 16, 16 # sets plot size
     fig = plt.figure()
 
     # Generate a color mapping of the levels we've specified
-    plt.contourf(Gbb, Ggen, length, cmap=cm.Reds)
+    plt.contourf(Ggen, Gbb, length, cmap=cm.Reds)
     plt.colorbar()
     plt.savefig("figures/distributions.png")
