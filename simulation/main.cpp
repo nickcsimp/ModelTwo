@@ -151,6 +151,25 @@ int main(int argc, char *argv[]) {
 
     f_hist.close();
 
+    if(set_make_length_distribution_plots) {
+
+        //find average length of the system at the end
+        double length_count = 0;
+        double polymer_count = 0;
+        for (int i = 0; i < system->lengths.size(); i++) {
+            length_count = length_count + (i + 1) * system->lengths[i];
+            polymer_count = polymer_count + system->lengths[i];
+        }
+        double average_length = length_count / polymer_count;
+
+        ofstream myfile;
+        myfile.open("../LengthDist.csv", std::ios_base::app);
+        if (myfile.is_open()) {
+            myfile << set_G_gen << ',' << set_G_bb << ',' << average_length << "\n";
+        }
+        myfile.close();
+    }
+
     if(set_make_images) {
         ofstream fw("input.txt", ofstream::out);
         if (fw.is_open()) {
@@ -260,42 +279,34 @@ int main(int argc, char *argv[]) {
 
     delete system;
 
-    ofstream f_python_main("main.py", ofstream::out);
-    f_python_main << "if __name__ == '__main__':" << "\n";
-    f_python_main << "    import sys" << "\n";
-    f_python_main << "    sys.path.append('../dataAnalysis')" << "\n";
-    if(set_make_images){
-        f_python_main << "    import Images" << "\n";
-    }
-    if(set_make_final_histogram || set_make_average_length_graph){
-        f_python_main << "    import Histogram" << "\n";
-    }
-    if(set_make_animated_histogram){
-        f_python_main << "    import AnimatedHistogram" << "\n";
-    }
-    /*
-    if(set_make_length_distribution_plots){
-        f_python_main << "import Distribution" << "\n";
-    }
-     */
+    if(set_make_images || set_make_final_histogram || set_make_animated_histogram || set_make_average_length_graph) {
+        ofstream f_python_main("main.py", ofstream::out);
+        f_python_main << "if __name__ == '__main__':" << "\n";
+        f_python_main << "    import sys" << "\n";
+        f_python_main << "    sys.path.append('../dataAnalysis')" << "\n";
+        if (set_make_images) {
+            f_python_main << "    import Images" << "\n";
+        }
+        if (set_make_final_histogram || set_make_average_length_graph) {
+            f_python_main << "    import Histogram" << "\n";
+        }
+        if (set_make_animated_histogram) {
+            f_python_main << "    import AnimatedHistogram" << "\n";
+        }
 
-    if(set_make_images){
-        f_python_main << "\n" << "    Images.create_plots('input.txt', 'figures/Images')";
+        if (set_make_images) {
+            f_python_main << "\n" << "    Images.create_plots('input.txt', 'figures/Images')";
+        }
+        if (set_make_final_histogram) {
+            f_python_main << "\n" << "    Histogram.create_histogram('histogram.txt')";
+        }
+        if (set_make_average_length_graph) {
+            f_python_main << "\n" << "    Histogram.create_average_length_graph('histogram.txt')";
+        }
+        if (set_make_animated_histogram) {
+            f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('histogram.txt')";
+        }
     }
-    if(set_make_final_histogram){
-        f_python_main << "\n" << "    Histogram.create_histogram('histogram.txt')";
-    }
-    if(set_make_average_length_graph){
-        f_python_main << "\n" << "    Histogram.create_average_length_graph('histogram.txt')";
-    }
-    if(set_make_animated_histogram){
-        f_python_main << "\n" << "    AnimatedHistogram.animate_histogram('histogram.txt')";
-    }
-    /*
-    if(set_make_length_distribution_plots){
-        f_python_main << "Distribution.create_contour_plot" << "\n";
-    }
-     */
 
     return 0;
 }

@@ -28,6 +28,8 @@ sim=$1
 inputlist=$2
 walltimehrs=$3
 walltimemins=$4
+walltimehrspost=$5
+walltimeminspost=$6
 
 # Get current directory
 maindirectory=$(pwd)
@@ -97,8 +99,20 @@ fi
 	echo "timeout "$(( $walltimemins+60*$walltimehrs -2))"m ""$""runcommand"
 } >> ArrayJob.sh
 
+{
+    echo "#!/bin/sh"
+    echo "#PBS -lwalltime="$walltimehrspost":"$walltimeminspost":00"
+    echo "#PBS -lselect=1:ncpus=1:mem=1gb"
+    echo ""
+    echo "module load anaconda3/personal"
+    echo "maindirectory="$maindirectory
+    echo 'runcommand="python main.py"'
+    echo "timeout "$(( $walltimeminspost+60*$walltimehrspost -2))"m ""$""runcommand"
+} >> PostJob.sh
+
 echo "Submitting array job..."
 # Finally we submit the array job to our private queue
 firstjob=$(qsub ${maindirectory}/ArrayJob.sh)
+qsub -W depend=afterany:$firstjob $maindirectory/PostJob.sh
 
 echo "Done. type qstat -t to check the status of your array job"

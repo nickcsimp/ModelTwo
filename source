@@ -6,4 +6,4 @@ g++ -std=c++11 -o ModelTwo simulation/main.cpp simulation/Conglomerate.cpp simul
 
 chmod +x MakeArrayJob.sh
 
-./MakeArrayJob.sh ./ModelTwo ./inputlist.csv 0 30
+./MakeArrayJob.sh ./ModelTwo ./inputlist.csv 0 30 0 30
