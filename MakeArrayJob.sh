@@ -106,6 +106,7 @@ fi
     echo ""
     echo "module load anaconda3/personal"
     echo "maindirectory="$maindirectory
+    echo "cd ""$""maindirectory"
     echo 'runcommand="python main.py"'
     echo "timeout "$(( $walltimeminspost+60*$walltimehrspost -2))"m ""$""runcommand"
 } >> PostJob.sh
