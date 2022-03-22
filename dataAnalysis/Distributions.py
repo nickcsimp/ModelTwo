@@ -8,16 +8,16 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def create_contour_plot(inputFileName):
     contour_data = pd.read_csv(inputFileName)
-    z = contour_data.pivot_table(index='x', columns='y', values='z')
-    x_unique = np.sort(contour_data.x.unique())
-    y_unique = np.sort(contour_data.y.unique())
+    length = contour_data.pivot_table(index='Ggen', columns='Gbb', values='length')
+    x_unique = np.sort(contour_data.Ggen.unique())
+    y_unique = np.sort(contour_data.Gbb.unique())
 
-    x, y = np.meshgrid(x_unique, y_unique)
+    Ggen, Gbb = np.meshgrid(x_unique, y_unique)
     # Initialize plot objects
     rcParams['figure.figsize'] = 5, 5 # sets plot size
     fig = plt.figure()
 
     # Generate a color mapping of the levels we've specified
-    plt.contourf(y, x, z, cmap=cm.Reds)
+    plt.contourf(Gbb, Ggen, length, cmap=cm.Reds)
     plt.colorbar()
     plt.savefig("figures/distributions.png")
