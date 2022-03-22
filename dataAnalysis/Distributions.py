@@ -8,7 +8,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def create_contour_plot(inputFileName):
     contour_data = pd.read_csv(inputFileName)
-    length = contour_data.pivot_table(index='Ggen', columns='Gbb', values='length')
+    length = contour_data.pivot_table(index='Ggen', columns='Gbb', values='Length')
     x_unique = np.sort(contour_data.Ggen.unique())
     y_unique = np.sort(contour_data.Gbb.unique())
 
