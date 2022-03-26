@@ -58,6 +58,7 @@ System::System(){
     template_indestructible = set_template_indestructible;
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
+    polymers_created = 0;
 }
 
 System::System(Conglomerate * initial_conglomerate){
@@ -121,6 +122,7 @@ System::System(Conglomerate * initial_conglomerate){
     template_indestructible = set_template_indestructible;
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
+    polymers_created = 0;
 }
 
 
@@ -230,6 +232,10 @@ void System::updateRates(int cong){
         transition_rates[5] = transition_rates[5] + conglomerate_rates[5][cong] * k;
         total_connections[5] = total_connections[5] + conglomerate_rates[5][cong];
         total_rate = total_rate + transition_rates[5];
+    }
+    polymers_created = 0;
+    for(int i=1;i<lengths.size(); i++){
+        polymers_created = polymers_created + lengths[i];
     }
 }
 

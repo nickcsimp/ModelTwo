@@ -24,6 +24,7 @@ int set_monomers_family_one;
 int set_template_length;
 int set_transition_limit;
 int set_time_limit;
+int set_polymer_limit;
 bool set_run_tests;
 bool set_make_animated_histogram;
 bool set_make_final_histogram;
@@ -79,22 +80,24 @@ void read_input(string filename){
                 } else if(variable_count == 11){
                     set_transition_limit = stoi(token);
                 } else if(variable_count == 12){
-                    set_template_indestructible = (token == "TRUE");
+                    set_polymer_limit = stoi(token);
                 } else if(variable_count == 13){
-                    set_monomer_count_is_constant= (token == "TRUE");
+                    set_template_indestructible = (token == "TRUE");
                 } else if(variable_count == 14){
-                    set_no_rebinding = (token == "TRUE");
+                    set_monomer_count_is_constant= (token == "TRUE");
                 } else if(variable_count == 15){
-                    set_run_tests = (token == "TRUE");
+                    set_no_rebinding = (token == "TRUE");
                 } else if(variable_count == 16){
-                    set_make_animated_histogram = (token == "TRUE");
+                    set_run_tests = (token == "TRUE");
                 } else if(variable_count == 17){
-                    set_make_final_histogram = (token == "TRUE");
+                    set_make_animated_histogram = (token == "TRUE");
                 } else if(variable_count == 18){
-                    set_make_average_length_graph = (token == "TRUE");
+                    set_make_final_histogram = (token == "TRUE");
                 } else if(variable_count == 19){
+                    set_make_average_length_graph = (token == "TRUE");
+                } else if(variable_count == 10){
                     set_make_length_distribution_plots = (token == "TRUE");
-                } else if(variable_count == 20){
+                } else if(variable_count == 21){
                     set_make_images = (token == "TRUE");
                 }
                 variable_count++;
@@ -135,7 +138,7 @@ int main(int argc, char *argv[]) {
         f_hist.open("histogram.txt", ofstream::out);
     }
 
-    while(count<transition_limit && transitions_possible){
+    while(count<transition_limit && transitions_possible && system->polymers_created<set_polymer_limit && system->simulation_time<set_time_limit){
         transitions_possible = system->chooseTransition(gen());
         count ++;
         if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {

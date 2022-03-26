@@ -12,6 +12,7 @@
 class System {
 public:
 
+    int polymers_created;
     int free_monomers[2];
 
     vector<int> lengths;
