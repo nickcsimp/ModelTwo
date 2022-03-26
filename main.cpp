@@ -84,11 +84,6 @@ int main() {
                 f_hist << system->lengths[system->lengths.size() - 1] << ']' << "\n";
             }
         }
-        cout << "Lengths: ";
-        for(auto & elem: system->lengths){
-            cout << elem << ',';
-        }
-        cout << endl;
     }
 
     f_hist.close();
