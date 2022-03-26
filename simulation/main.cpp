@@ -95,7 +95,7 @@ void read_input(string filename){
                     set_make_final_histogram = (token == "TRUE");
                 } else if(variable_count == 19){
                     set_make_average_length_graph = (token == "TRUE");
-                } else if(variable_count == 10){
+                } else if(variable_count == 20){
                     set_make_length_distribution_plots = (token == "TRUE");
                 } else if(variable_count == 21){
                     set_make_images = (token == "TRUE");
