@@ -6,38 +6,87 @@
 
 void Tests::run(){
 
+    bool sti = set_template_indestructible;
+    bool smcic = set_monomer_count_is_constant;
+    bool snr = set_no_rebinding;
+    double ss = set_seed;
+    double sk = set_k;
+    double sk0 = set_k0;
+    double sGbb = set_G_bb;
+    double sGspec = set_G_spec;
+    double sGgen = set_G_gen;
+    double sMeff = set_M_eff;
+    int smfz = set_monomers_family_zero;
+    int smfo = set_monomers_family_one;
+    int stl = set_template_length;
+    int strl = set_transition_limit;
+
+    bool srt = set_run_tests;
+    bool smah = set_make_animated_histogram;
+    bool smfh = set_make_final_histogram;
+    bool smalg = set_make_average_length_graph;
+    bool smldp = set_make_length_distribution_plots;
+    bool smi = set_make_images;
+
+    cout << "Testing Conglomerate Initialisation...." << endl;
     if(!testConglomerateInitialissation()){
         cout << "Error: Test conglomerate initialisation" << endl;
     }
+    cout << "Testing Conglomerate Update...." << endl;
     if(!testConglomerateUpdate()){
         cout << "Error: Test conglomerate update" << endl;
     }
+    cout << "Testing Conglomerate Add Connection...." << endl;
     if(!testConglomerateAddConnection()){
         cout << "Error: Test conglomerate add connection" << endl;
     }
+    cout << "Testing Conglomerate...." << endl;
     if(!testConglomerate()){
         cout << "Error: Test conglomerate" << endl;
     }
-
+    cout << "Testing Middle Tail Unbinding...." << endl;
     if(!testMiddleTailUnbinding()){
         cout << "Error: Test middle tail unbinding" << endl;
     }
-
+    cout << "Testing End Tail Unbinding...." << endl;
     if(!testEndTailUnbinding()) {
         cout << "Error: Test End Tail Unbinding()" << endl;
     }
+    cout << "Testing Polymerisation Equilibrium...." << endl;
     if(!testPolymerisationEquilibrium()) {
         cout << "Error: testPolymerisationEquilibrium()" << endl;
     }
-
+    cout << "Testing Dimerisation Equilibrium...." << endl;
     if(!testDimerisationEquilibrium()) {
         cout << "Error: testDimerisationEquilibrium()" << endl;
     }
-
+    cout << "Testing Tail Binding Equilibrium...." << endl;
     if(!testTailBindEquilibrium()) {
         cout << "Error: testTailBindEquilibrium()" << endl;
     }
+    cout << "Tests Complete" << endl;
 
+    set_template_indestructible = sti;
+    set_monomer_count_is_constant = smcic;
+    set_no_rebinding = snr;
+    set_seed = ss;
+    set_k = sk;
+    set_k0 = sk0;
+    set_G_bb = sGbb;
+    set_G_spec = sGspec;
+    set_G_gen = sGgen;
+    set_M_eff = sMeff;
+    set_monomers_family_zero = smfz;
+    set_monomers_family_one = smfo;
+    set_template_length = stl;
+    set_transition_limit = strl;
+
+    set_run_tests = srt;
+    set_make_animated_histogram = smah;
+    set_make_final_histogram = smfh;
+    set_make_average_length_graph = smalg;
+    set_make_length_distribution_plots = smldp;
+    set_make_images = smi;
 }
 
 bool Tests::testConglomerateInitialissation() {
@@ -789,6 +838,7 @@ bool Tests::testPolymerisationEquilibrium(){
         //Therefore we use transition_limit*0.5 for both as the expected time
         Z_connected.push_back((hist[0]-transition_limit*0.5)/sqrt(transition_limit*0.5));
         Z_unconnected.push_back((hist[1]-transition_limit*0.5)/sqrt(transition_limit*0.5));
+
     }
 
     //We take the mean over the 5 tests
@@ -1013,14 +1063,13 @@ bool Tests::testDimerisationEquilibrium(){
             if (system->conglomerates.size() == 1) {
                 //Now connected so we add time to unconnected list
                 hist[1] = hist[1] + system->simulation_time - previous_time;
-            } else if (system->conglomerates.size() == 2) {
+            } else if (system->conglomerates.size() == 0) {
                 //Now unconnected so we add time to connected list
                 hist[0] = hist[0] + system->simulation_time - previous_time;
             }
             previous_time = system->simulation_time;
             count++;
         }
-
         // Total transitions will increase with the binding rate and the transition limit but rates are 1/sec so no factor
         Z.push_back((count-transition_limit*set_k0)/sqrt(transition_limit*set_k0));
         //We have the two rates the same so the time spent should be equal
@@ -1088,7 +1137,7 @@ bool Tests::testDimerisationEquilibrium(){
             if (system->conglomerates.size() == 1) {
                 //Now connected so we add time to unconnected list
                 hist[1] = hist[1] + system->simulation_time - previous_time;
-            } else if (system->conglomerates.size() == 2) {
+            } else if (system->conglomerates.size() == 0) {
                 //Now unconnected so we add time to connected list
                 hist[0] = hist[0] + system->simulation_time - previous_time;
             }
@@ -1167,7 +1216,7 @@ bool Tests::testDimerisationEquilibrium(){
             if (system->conglomerates.size() == 1) {
                 //Now connected so we add time to unconnected list
                 hist[1] = hist[1] + system->simulation_time - previous_time;
-            } else if (system->conglomerates.size() == 2) {
+            } else if (system->conglomerates.size() == 0) {
                 //Now unconnected so we add time to connected list
                 hist[0] = hist[0] + system->simulation_time - previous_time;
             }
@@ -1186,21 +1235,21 @@ bool Tests::testDimerisationEquilibrium(){
     mean = sum/Z.size();
     if(abs(mean)>=1.65){
         cout << "Confidence level lower than expected." << endl;
-        cout << "Z=" << mean << " for the number of transitions in the simulation 3."<< endl;
+        cout << "Z=" << mean << " for the number of transitions in the simulation 4.5."<< endl;
     }
 
     sum = accumulate(Z_connected.begin(), Z_connected.end(), 0.0);
     mean = sum/Z_connected.size();
     if(abs(mean)>=1.65){
         cout << "Confidence level lower than expected." << endl;
-        cout << "Z=" << mean << " for the time spent connected in simulation 3." << endl;
+        cout << "Z=" << mean << " for the time spent connected in simulation 4.5." << endl;
     }
 
     sum = accumulate(Z_unconnected.begin(), Z_unconnected.end(), 0.0);
     mean = sum/Z_unconnected.size();
     if(abs(mean)>=1.65){
         cout << "Confidence level lower than expected." << endl;
-        cout << "Z=" << mean << " for the time spent unconnected in simulation 3." << endl;
+        cout << "Z=" << mean << " for the time spent unconnected in simulation 4.5." << endl;
     }
 
     return true;

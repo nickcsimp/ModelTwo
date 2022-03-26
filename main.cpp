@@ -34,19 +34,19 @@ bool set_make_images;
 int main() {
 
     set_template_indestructible = true;
-    set_monomer_count_is_constant = false;
-    set_no_rebinding = false;
+    set_monomer_count_is_constant = true;
+    set_no_rebinding = true;
     set_seed = 200;
     set_k = 1;
     set_k0 = 1;
-    set_G_bb = -15;
+    set_G_bb = -16;
     set_G_spec = -4;
     set_G_gen = -5;
     set_M_eff = 100;
     set_monomers_family_zero = 0;
-    set_monomers_family_one = 100;
-    set_template_length = 3;
-    set_transition_limit = 1000;
+    set_monomers_family_one = 1000;
+    set_template_length = 30;
+    set_transition_limit = 200000;
 
     set_run_tests = false;
     set_make_animated_histogram = false;
@@ -60,11 +60,9 @@ int main() {
         Tests tests;
         tests.run();
     }
-    double seed = set_seed;
-    mt19937 gen(seed);
 
+    mt19937 gen(set_seed);
     System * system = new System();
-
     int count = 0;
     int transition_limit = set_transition_limit;
     bool transitions_possible = true;
@@ -86,6 +84,11 @@ int main() {
                 f_hist << system->lengths[system->lengths.size() - 1] << ']' << "\n";
             }
         }
+        cout << "Lengths: ";
+        for(auto & elem: system->lengths){
+            cout << elem << ',';
+        }
+        cout << endl;
     }
 
     f_hist.close();
@@ -107,8 +110,6 @@ int main() {
             myfile << set_G_gen << ',' << set_G_bb << ',' << average_length << "\n";
         }
         myfile.close();
-        //TODO think of file names - gspec_$g_spec$.csv????
-        //TODO create files with arrayjob?? - need to initialise x,y,z and file creation
     }
 
     if(set_make_images) {
