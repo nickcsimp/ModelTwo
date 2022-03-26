@@ -40,7 +40,7 @@ System::System(){
     total_external_sites[0] = total_external_sites[0] + set_monomers_family_zero;
     total_external_sites[1] = total_external_sites[1] + set_monomers_family_one;
 
-    external_connection_rate = external_connection_rate + set_monomers_family_zero*set_monomers_family_one*k0;
+    external_connection_rate = set_monomers_family_zero*set_monomers_family_one*k0;
 
     //Make template polymer into a conglomerate
     Polymer * template_polymer = new Polymer(++polymer_index, set_template_length, 0);
@@ -97,7 +97,7 @@ System::System(Conglomerate * initial_conglomerate){
     total_external_sites[0] = total_external_sites[0] + set_monomers_family_zero;
     total_external_sites[1] = total_external_sites[1] + set_monomers_family_one;
 
-    external_connection_rate = external_connection_rate + set_monomers_family_zero*set_monomers_family_one*k0;
+    external_connection_rate = set_monomers_family_zero*set_monomers_family_one*k0;
 
     int longest_polymer = 0;
     //Make template conglomerate part of the system
