@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
         //find average length of the system at the end
         double length_count = 0;
         double polymer_count = 0;
-        for (int i = 0; i < system->lengths.size(); i++) {
+        for (int i = 1; i < system->lengths.size(); i++) {
             length_count = length_count + (i + 1) * system->lengths[i];
             polymer_count = polymer_count + system->lengths[i];
         }
