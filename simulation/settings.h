@@ -21,6 +21,7 @@ extern int set_monomers_family_one;
 extern int set_template_length;
 extern int set_transition_limit;
 extern int set_time_limit;
+extern bool set_run_tests;
 extern bool set_make_animated_histogram;
 extern bool set_make_final_histogram;
 extern bool set_make_average_length_graph;

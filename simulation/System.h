@@ -11,6 +11,9 @@
 
 class System {
 public:
+
+    int free_monomers[2];
+
     vector<int> lengths;
     double simulation_time;
     int conglomerate_index;
