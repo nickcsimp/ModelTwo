@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 
     f_hist.close();
 
-    if(set_make_length_distribution_plots && system->polymer_count == set_polymer_limit) {
+    if(set_make_length_distribution_plots && system->polymers_created == set_polymer_limit) {
 
         //find average length of the system at the end
         double length_count = 0;
