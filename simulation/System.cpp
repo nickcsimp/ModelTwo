@@ -59,6 +59,7 @@ System::System(){
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
     polymers_created = 0;
+    simultation_time = 0;
 }
 
 System::System(Conglomerate * initial_conglomerate){
@@ -123,6 +124,7 @@ System::System(Conglomerate * initial_conglomerate){
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
     polymers_created = 0;
+    simultation_time = 0;
 }
 
 
