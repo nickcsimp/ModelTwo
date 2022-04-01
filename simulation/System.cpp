@@ -265,8 +265,8 @@ bool System::chooseTransition(double seed){
     //TODO site zero might be always the final site?
     int chosen_conglomerate_zero = -1;
     int chosen_conglomerate_one = -1;
-    int chosen_site_zero = -1;
-    int chosen_site_one = -1;
+    double chosen_site_zero = -1;
+    double chosen_site_one = -1;
     int first = 0;
     int second = 1;
 
@@ -387,7 +387,7 @@ bool System::chooseTransition(double seed){
         double random_number_site_zero = gen();
 
         for(int site_zero = 1; site_zero <= external_sites[first][chosen_conglomerate_zero]; site_zero ++){
-            if((site_zero/external_sites[first][chosen_conglomerate_zero])>=(random_number_site_zero/mt19937::max())){
+            if((site_zero/double(external_sites[first][chosen_conglomerate_zero]))>=(random_number_site_zero/mt19937::max())){
                 chosen_site_zero = site_zero - 1;
                 break;
             }
@@ -397,7 +397,7 @@ bool System::chooseTransition(double seed){
         double random_number_site_one = gen();
 
         for(int site_one = 1; site_one <= external_sites[second][chosen_conglomerate_one]; site_one ++){
-            if((site_one/external_sites[second][chosen_conglomerate_one])>=(random_number_site_one/mt19937::max())){
+            if((site_one/double(external_sites[second][chosen_conglomerate_one]))>=(random_number_site_one/mt19937::max())){
                 chosen_site_one = site_one - 1;
                 break;
             }
