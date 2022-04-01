@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
         f_hist.open("histogram.txt", ofstream::out);
     }
 
-    while(count<transition_limit && transitions_possible && system->polymers_created<set_polymer_limit && system->simulation_time<set_time_limit){
+    while(transitions_possible && system->polymers_created<set_polymer_limit){
         transitions_possible = system->chooseTransition(gen());
         count ++;
         if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 
     f_hist.close();
 
-    if(set_make_length_distribution_plots && system->polymers_created == set_polymer_limit) {
+    if(set_make_length_distribution_plots) {
 
         //find average length of the system at the end
         double length_count = 0;
