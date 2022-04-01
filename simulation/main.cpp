@@ -157,8 +157,8 @@ int main(int argc, char *argv[]) {
     if(set_make_length_distribution_plots) {
 
         //find average length of the system at the end
-        double length_count = 0;
-        double polymer_count = 0;
+        double length_count = system->lengths[0]-set_monomers_family_zero-set_monomers_family_one;
+        double polymer_count = system->lengths[0]-set_monomers_family_zero-set_monomers_family_one;;
         for (int i = 1; i < system->lengths.size(); i++) {
             length_count = length_count + (i + 1) * system->lengths[i];
             polymer_count = polymer_count + system->lengths[i];
