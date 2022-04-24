@@ -31,7 +31,7 @@ bool set_make_final_histogram;
 bool set_make_average_length_graph;
 bool set_make_length_distribution_plots;
 bool set_make_images;
-double set_volume
+double set_volume;
 
 void read_input(string filename){
     string input(filename);
