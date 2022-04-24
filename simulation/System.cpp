@@ -33,6 +33,7 @@ System::System(){
     G_spec = set_G_spec;
     G_gen = set_G_gen;
     M_eff = set_M_eff;
+    volume = set_volume;
 
     free_monomers[0] = set_monomers_family_zero;
     free_monomers[1] = set_monomers_family_one;
@@ -40,7 +41,7 @@ System::System(){
     total_external_sites[0] = total_external_sites[0] + set_monomers_family_zero;
     total_external_sites[1] = total_external_sites[1] + set_monomers_family_one;
 
-    external_connection_rate = set_monomers_family_zero*set_monomers_family_one*k0;
+    external_connection_rate = set_monomers_family_zero*(set_monomers_family_one/volume)*k0;
 
     //Make template polymer into a conglomerate
     Polymer * template_polymer = new Polymer(++polymer_index, set_template_length, 0);
@@ -58,7 +59,6 @@ System::System(){
     template_indestructible = set_template_indestructible;
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
-    polymers_created = 0;
     simulation_time = 0;
 }
 
@@ -91,6 +91,7 @@ System::System(Conglomerate * initial_conglomerate){
     G_spec = set_G_spec;
     G_gen = set_G_gen;
     M_eff = set_M_eff;
+    volume = set_volume;
 
     free_monomers[0] = set_monomers_family_zero;
     free_monomers[1] = set_monomers_family_one;
@@ -99,7 +100,7 @@ System::System(Conglomerate * initial_conglomerate){
     total_external_sites[0] = total_external_sites[0] + set_monomers_family_zero;
     total_external_sites[1] = total_external_sites[1] + set_monomers_family_one;
 
-    external_connection_rate = set_monomers_family_zero*set_monomers_family_one*k0;
+    external_connection_rate = set_monomers_family_zero*(set_monomers_family_one/volume)*k0;
 
     int longest_polymer = 0;
     //Make template conglomerate part of the system
@@ -123,7 +124,6 @@ System::System(Conglomerate * initial_conglomerate){
     template_indestructible = set_template_indestructible;
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
-    polymers_created = 0;
     simulation_time = 0;
 }
 
@@ -146,10 +146,11 @@ void System::updateRates(int cong){
         total_external_sites[fam]++;
 
         total_rate = total_rate - external_connection_rate;
-
-        external_connection_rate = external_connection_rate + free_monomers[not_fam]*k0;
+        
+        external_connection_rate = external_connection_rate + k0*(free_monomers[not_fam]/volume);
+        
         for(int i=0; i<conglomerates.size(); i++){
-            external_connection_rate = external_connection_rate + external_sites[not_fam][i] * k0;
+            external_connection_rate = external_connection_rate + k0 * external_sites[not_fam][i] * (1/volume);
         }
         total_rate = total_rate + external_connection_rate;
         //TODO think about lengths being correct when removed etc
@@ -158,15 +159,17 @@ void System::updateRates(int cong){
         total_rate = 0;
 
         //Remove ext rate from chosen conglomerate
-        external_connection_rate = external_connection_rate - external_sites[0][cong] * free_monomers[1] * k0;
-        external_connection_rate = external_connection_rate - external_sites[1][cong] * free_monomers[0] * k0;
+        //For one external site on a conglomerate, the rate is k0[M]; [M]=free_monomers/volume
+        external_connection_rate = external_connection_rate - k0*external_sites[0][cong]*(free_monomers[1]/volume);
+        external_connection_rate = external_connection_rate - k0*external_sites[1][cong]*(free_monomers[0]/volume);
 
         for (int i = 0; i < conglomerates.size(); i++) { //Loop conglomerates
             if (i != cong) { //Conglomerate can't bind within itself here
+                //For any site on cong, the rate of binding a site on i is k0[i]; [i] = number of sites/volume
                 external_connection_rate =
-                        external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
+                        external_connection_rate - k0 * (external_sites[0][i] * external_sites[1][cong])/volume;
                 external_connection_rate =
-                        external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
+                        external_connection_rate - k0 * (external_sites[1][i] * external_sites[0][cong])/volume;
             }
         }
 
@@ -179,15 +182,15 @@ void System::updateRates(int cong){
         total_external_sites[1] = total_external_sites[1] + external_sites[1][cong];
 
         //Add new to total
-        external_connection_rate = external_connection_rate + external_sites[0][cong] * free_monomers[1] * k0;
-        external_connection_rate = external_connection_rate + external_sites[1][cong] * free_monomers[0] * k0;
+        //For one external site on a conglomerate, the rate is k0[M]; [M]=free_monomers/volume
+        external_connection_rate = external_connection_rate + k0*external_sites[0][cong]*(free_monomers[1]/volume);
+        external_connection_rate = external_connection_rate + k0*external_sites[1][cong]*(free_monomers[0]/volume);
 
         for (int i = 0; i < conglomerates.size(); i++) { //Loop conglomerates
             if (i != cong) { //Conglomerate can't bind within itself here
-                external_connection_rate =
-                        external_connection_rate + external_sites[0][i] * external_sites[1][cong] * k0;
-                external_connection_rate =
-                        external_connection_rate + external_sites[1][i] * external_sites[0][cong] * k0;
+                //For any site on cong, the rate of binding a site on i is k0[i]; [i] = number of sites/volume                
+                external_connection_rate = external_connection_rate + k0 * (external_sites[0][i] * external_sites[1][cong])/volume;
+                external_connection_rate = external_connection_rate + k0 * (external_sites[1][i] * external_sites[0][cong])/volume;
             }
         }
         total_rate = total_rate + external_connection_rate;
@@ -234,10 +237,6 @@ void System::updateRates(int cong){
         transition_rates[5] = transition_rates[5] + conglomerate_rates[5][cong] * k;
         total_connections[5] = total_connections[5] + conglomerate_rates[5][cong];
         total_rate = total_rate + transition_rates[5];
-    }
-    polymers_created = 0;
-    for(int i=1;i<lengths.size(); i++){
-        polymers_created = polymers_created + lengths[i];
     }
 }
 
@@ -311,10 +310,12 @@ bool System::chooseTransition(double seed){
                 if(!monomer_count_is_constant){
                     free_monomers[first]--;
                     //Need to remove the free monomer contribution to rates
-                    external_connection_rate = external_connection_rate - free_monomers[second] * k0;
-
+                    //For one monomer family first, rate of monomer monomer binding is k0[M(second)]
+                    external_connection_rate = external_connection_rate - k0 * (free_monomers[second]/volume);
+                    
+                    //For every conglomerate site second, rate of binding 1 monomer family first is k0[M] = k0(1/volume)
                     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
-                        external_connection_rate = external_connection_rate - external_sites[second][i] * k0;
+                        external_connection_rate = external_connection_rate - k0 * external_sites[second][i] * (1/volume);
                     }
                     lengths[0]--;
                     //TODO total external sites?
@@ -358,11 +359,14 @@ bool System::chooseTransition(double seed){
                 if(!monomer_count_is_constant){
                     free_monomers[second]--;
                     //Need to remove the free monomer contribution to rates
-                    external_connection_rate = external_connection_rate - free_monomers[first] * k0;
-
+                    //For one monomer family second, rate of monomer monomer binding is k0[M(first)]
+                    external_connection_rate = external_connection_rate - k0 * (free_monomers[first]/volume);
+                    
+                    //For every conglomerate site first, rate of binding 1 monomer family second is k0[M] = k0(1/volume)
                     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
-                        external_connection_rate = external_connection_rate - external_sites[first][i] * k0;
+                        external_connection_rate = external_connection_rate - k0 * external_sites[first][i] * (1/volume);
                     }
+                                      
                     lengths[0]--;
                     total_external_sites[second]--;
                 }
@@ -491,11 +495,12 @@ bool System::chooseTransition(double seed){
                             free_monomers[famil]++;
 
                             total_external_sites[famil]++;
-
-                            external_connection_rate = external_connection_rate + free_monomers[not_famil] * k0;
+                            //Adding one free monomer will increase monomer monomer binding rates by k0[M] for one site
+                            external_connection_rate = external_connection_rate + k0 * (free_monomers[not_famil]/volume);
 
                             for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
-                                external_connection_rate = external_connection_rate + external_sites[not_famil][i] * k0;
+                            //Adding one free monomer will increase cong monomer binding rates by k0[M] for each site where [M]=1/volume
+                                external_connection_rate = external_connection_rate + k0 * external_sites[not_famil][i] * (1/volume);
                             }
                         }
                     } else {
@@ -549,14 +554,15 @@ bool System::chooseTransition(double seed){
                                 not_famil = 1;
                             }
                             free_monomers[famil]++;
-
+                            
                             total_external_sites[famil]++;
-
-                            external_connection_rate = external_connection_rate + free_monomers[not_famil] * k0;
+                            //Adding one free monomer will increase monomer monomer binding rates by k0[M] for one site
+                            external_connection_rate = external_connection_rate + k0 * (free_monomers[not_famil]/volume);
 
                             for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
-                                external_connection_rate = external_connection_rate + external_sites[not_famil][i] * k0;
-                            }
+                            //Adding one free monomer will increase cong monomer binding rates by k0[M] for each site where [M]=1/volume
+                                external_connection_rate = external_connection_rate + k0 * external_sites[not_famil][i] * (1/volume);
+                            }                          
                         }
                     } else {
                         output[0]->index = ++conglomerate_index;
@@ -612,13 +618,15 @@ void System::removeConglomerate(int cong){
     total_rate = 0;
 
     //Need to incorporate the free monomers
-    external_connection_rate = external_connection_rate - external_sites[0][cong] * free_monomers[1] * k0;
-    external_connection_rate = external_connection_rate - external_sites[1][cong] * free_monomers[0] * k0;
+    //For one external site on a conglomerate, the rate is k0[M]; [M]=free_monomers/volume
+    external_connection_rate = external_connection_rate - k0*external_sites[0][cong]*(free_monomers[1]/volume);
+    external_connection_rate = external_connection_rate - k0*external_sites[1][cong]*(free_monomers[0]/volume);
 
     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
         if (i != cong) { //Conglomerate can't bind within itself here
-            external_connection_rate = external_connection_rate - external_sites[0][i] * external_sites[1][cong] * k0;
-            external_connection_rate = external_connection_rate - external_sites[1][i] * external_sites[0][cong] * k0;
+            //For any site on cong, the rate of binding a site on i is k0[i]; [i] = number of sites/volume
+            external_connection_rate = external_connection_rate - k0 * (external_sites[0][i] * external_sites[1][cong])/volume;
+            external_connection_rate = external_connection_rate - k0 * (external_sites[1][i] * external_sites[0][cong])/volume;
         }
     }
     delete conglomerates[cong];
@@ -677,13 +685,15 @@ void System::addConglomerate(Conglomerate * new_cong){
     total_external_sites[1] = total_external_sites[1] + external_sites[1][cong];
 
     //Need to incorporate the free monomers
-    external_connection_rate = external_connection_rate + external_sites[0][cong] * free_monomers[1] * k0;
-    external_connection_rate = external_connection_rate + external_sites[1][cong] * free_monomers[0] * k0;
+    //For one external site on a conglomerate, the rate is k0[M]; [M]=free_monomers/volume
+    external_connection_rate = external_connection_rate + k0*external_sites[0][cong]*(free_monomers[1]/volume);
+    external_connection_rate = external_connection_rate + k0*external_sites[1][cong]*(free_monomers[0]/volume);
 
     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
         if (i != cong) { //Conglomerate can't bind within itself here
-            external_connection_rate = external_connection_rate + external_sites[0][i] * external_sites[1][cong] * k0;
-            external_connection_rate = external_connection_rate + external_sites[1][i] * external_sites[0][cong] * k0;
+            //For any site on cong, the rate of binding a site on i is k0[i]; [i] = number of sites/volume
+            external_connection_rate = external_connection_rate + k0 * (external_sites[0][i] * external_sites[1][cong])/volume;
+            external_connection_rate = external_connection_rate + k0 * (external_sites[1][i] * external_sites[0][cong])/volume;
         }
     }
     total_rate = total_rate + external_connection_rate;
