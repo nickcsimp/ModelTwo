@@ -31,6 +31,7 @@ bool set_make_final_histogram;
 bool set_make_average_length_graph;
 bool set_make_length_distribution_plots;
 bool set_make_images;
+double set_volume
 
 void read_input(string filename){
     string input(filename);
@@ -76,28 +77,30 @@ void read_input(string filename){
                 } else if(variable_count == 9){
                     set_template_length = stoi(token);
                 } else if(variable_count == 10){
+                    set_volume = stod(token);
+                }else if(variable_count == 11){
                     set_time_limit = stod(token);
-                } else if(variable_count == 11){
-                    set_transition_limit = stoi(token);
                 } else if(variable_count == 12){
-                    set_polymer_limit = stoi(token);
+                    set_transition_limit = stoi(token);
                 } else if(variable_count == 13){
-                    set_template_indestructible = (token == "TRUE");
+                    set_polymer_limit = stoi(token);
                 } else if(variable_count == 14){
-                    set_monomer_count_is_constant= (token == "TRUE");
+                    set_template_indestructible = (token == "TRUE");
                 } else if(variable_count == 15){
-                    set_no_rebinding = (token == "TRUE");
+                    set_monomer_count_is_constant= (token == "TRUE");
                 } else if(variable_count == 16){
-                    set_run_tests = (token == "TRUE");
+                    set_no_rebinding = (token == "TRUE");
                 } else if(variable_count == 17){
-                    set_make_animated_histogram = (token == "TRUE");
+                    set_run_tests = (token == "TRUE");
                 } else if(variable_count == 18){
-                    set_make_final_histogram = (token == "TRUE");
+                    set_make_animated_histogram = (token == "TRUE");
                 } else if(variable_count == 19){
-                    set_make_average_length_graph = (token == "TRUE");
+                    set_make_final_histogram = (token == "TRUE");
                 } else if(variable_count == 20){
-                    set_make_length_distribution_plots = (token == "TRUE");
+                    set_make_average_length_graph = (token == "TRUE");
                 } else if(variable_count == 21){
+                    set_make_length_distribution_plots = (token == "TRUE");
+                } else if(variable_count == 22){
                     set_make_images = (token == "TRUE");
                 }
                 variable_count++;
@@ -137,8 +140,10 @@ int main(int argc, char *argv[]) {
     if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {
         f_hist.open("histogram.txt", ofstream::out);
     }
+    
+    int polymer_count = 0;
 
-    while(transitions_possible && system->polymers_created<set_polymer_limit){
+    while(transitions_possible && polymer_count<set_polymer_limit){
         transitions_possible = system->chooseTransition(gen());
         count ++;
         if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {
@@ -150,20 +155,27 @@ int main(int argc, char *argv[]) {
                 f_hist << system->lengths[system->lengths.size()-1] << ']' << "\n";
             }
         }
+        
+        polymer_count = 0;//Reset count
+        for(int i=0; i<system->lengths.size(); i++){ //Loop all polymer lengths
+            polymer_count = polymer_count + system->lengths[i]; //Count how many polymers there are
+        }
+        polymer_count = polymer_count - set_monomers_family_zero-set_monomers_family_one-1; // Remove initial monomers and template polymer
     }
 
     f_hist.close();
 
     if(set_make_length_distribution_plots) {
-
-        //find average length of the system at the end
-        double length_count = system->lengths[0]-set_monomers_family_zero-set_monomers_family_one;
-        double polymer_count = system->lengths[0]-set_monomers_family_zero-set_monomers_family_one;;
-        for (int i = 1; i < system->lengths.size(); i++) {
-            length_count = length_count + (i + 1) * system->lengths[i];
-            polymer_count = polymer_count + system->lengths[i];
+        int length_count = 0; //Initialise total length count
+        polymer_count = 0;//Reset polymer count
+        for(int i=0; i<system->lengths.size(); i++){ //Loop all polymer lengths
+            polymer_count = polymer_count + system->lengths[i]; //Count how many polymers there are
+            length_count = length_count + system->lengths[i]*(i+1); //Count the lengths of all the polymers
         }
-        double average_length = length_count / polymer_count;
+        polymer_count = polymer_count - set_monomers_family_zero-set_monomers_family_one-1; // Remove initial monomers and template polymer
+        length_count = length_count - set_monomers_family_zero-set_monomers_family_one-set_template_length; //Remove initial monomers and template polymer
+ 
+        double average_length = double(length_count) / double(polymer_count);
 
         ofstream myfile;
         myfile.open("../LengthDist.csv", std::ios_base::app);
