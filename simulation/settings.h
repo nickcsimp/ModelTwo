@@ -28,5 +28,6 @@ extern bool set_make_final_histogram;
 extern bool set_make_average_length_graph;
 extern bool set_make_length_distribution_plots;
 extern bool set_make_images;
+extern double set_volume;
 
 #endif //MODELTWO_SETTINGS_H
