@@ -12,7 +12,6 @@
 class System {
 public:
 
-    int polymers_created;
     int free_monomers[2];
 
     vector<int> lengths;
@@ -46,6 +45,7 @@ public:
     double G_spec;//Specific bond forming free energy
     double G_gen;//Generic bond forming free energy
     double M_eff;//Effective concentration of monomers in zipping
+    double volume; //Volume of system
 
     bool template_indestructible;
     bool monomer_count_is_constant;
