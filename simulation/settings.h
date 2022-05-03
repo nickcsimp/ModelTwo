@@ -16,6 +16,7 @@ extern double set_G_bb;//Backbone forming free energy
 extern double set_G_spec;//Specific bond forming free energy
 extern double set_G_gen;//Generic bond forming free energy
 extern double set_M_eff;//Effective concentration of monomers in zipping
+extern double set_G_end;
 extern int set_monomers_family_zero;
 extern int set_monomers_family_one;
 extern int set_template_length;
