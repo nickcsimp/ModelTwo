@@ -29,5 +29,6 @@ extern bool set_make_average_length_graph;
 extern bool set_make_length_distribution_plots;
 extern bool set_make_images;
 extern double set_volume;
-
+extern bool set_weakened_template_end;
+extern bool set_parallel_growth;
 #endif //MODELTWO_SETTINGS_H

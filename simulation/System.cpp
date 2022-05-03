@@ -6,18 +6,33 @@
 
 
 System::System(){
+    total_rate=0;
+    simulation_time = 0;
+
+    external_connection_rate = 0;
+
+
     //Initialise index count
     conglomerate_index = -1;
     polymer_index = -1;
+    vector<Conglomerate *> empt;
+    conglomerates = empt;
+
+    int number_of_transitions;
+    if(set_weakened_template_end){
+        number_of_transitions = 7;
+    } else {
+        number_of_transitions = 6;
+    }
 
     //Give vectors correct sizes
     vector<int> empty_vector;
-    vector<vector<int>> vect(6, empty_vector);
+    vector<vector<int>> vect(number_of_transitions, empty_vector);
     conglomerate_rates = vect;
 
-    vector<int> v(6, 0);
+    vector<int> v(number_of_transitions, 0);
     total_connections = v;
-    vector<double> ve(6, 0);
+    vector<double> ve(number_of_transitions, 0);
     transition_rates = ve;
 
     vector<int> vec(2, 0);
@@ -34,6 +49,7 @@ System::System(){
     G_gen = set_G_gen;
     M_eff = set_M_eff;
     volume = set_volume;
+    G_end = set_G_end;
 
     free_monomers[0] = set_monomers_family_zero;
     free_monomers[1] = set_monomers_family_one;
@@ -45,6 +61,7 @@ System::System(){
 
     //Make template polymer into a conglomerate
     Polymer * template_polymer = new Polymer(++polymer_index, set_template_length, 0);
+    template_polymer->is_template = true;
     Conglomerate * template_conglomerate = new Conglomerate(template_polymer);
     template_conglomerate->index = ++conglomerate_index;
 
@@ -59,22 +76,36 @@ System::System(){
     template_indestructible = set_template_indestructible;
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
-    simulation_time = 0;
 }
 
 System::System(Conglomerate * initial_conglomerate){
+
+    total_rate=0;
+    simulation_time = 0;
+
+    external_connection_rate = 0;
+
+    vector<Conglomerate *> empt;
+    conglomerates = empt;
     //Initialise index count
     conglomerate_index = -1;
     polymer_index = -1;
 
+    int number_of_transitions;
+    if(set_weakened_template_end){
+        number_of_transitions = 7;
+    } else {
+        number_of_transitions = 6;
+    }
+
     //Give vectors correct sizes
     vector<int> empty_vector;
-    vector<vector<int>> vect(6, empty_vector);
+    vector<vector<int>> vect(number_of_transitions, empty_vector);
     conglomerate_rates = vect;
 
-    vector<int> v(6, 0);
+    vector<int> v(number_of_transitions, 0);
     total_connections = v;
-    vector<double> ve(6, 0);
+    vector<double> ve(number_of_transitions, 0);
     transition_rates = ve;
 
     vector<int> vec(2, 0);
@@ -91,6 +122,7 @@ System::System(Conglomerate * initial_conglomerate){
     G_spec = set_G_spec;
     G_gen = set_G_gen;
     M_eff = set_M_eff;
+    G_end = set_G_end;
     volume = set_volume;
 
     free_monomers[0] = set_monomers_family_zero;
@@ -110,6 +142,7 @@ System::System(Conglomerate * initial_conglomerate){
             longest_polymer = pol->length;
         }
     }
+    //Need to set template in initialisation of cong
     initial_conglomerate->index = ++conglomerate_index;
     addConglomerate(initial_conglomerate);
 
@@ -124,12 +157,11 @@ System::System(Conglomerate * initial_conglomerate){
     template_indestructible = set_template_indestructible;
     monomer_count_is_constant = set_monomer_count_is_constant;
     no_rebinding = set_no_rebinding;
-    simulation_time = 0;
 }
 
 
 void System::updateRates(int cong){
-    if(conglomerates[cong]->polymers.size() == 1 && conglomerates[cong]->polymers[0]->length == 1){
+    if((conglomerates[cong]->polymers.size() == 1 && conglomerates[cong]->polymers[0]->length == 1) && !conglomerates[cong]->polymers[0]->is_template){
         //Conglomerate is a free monomer
         //Save the family
         int fam = 0;
@@ -146,14 +178,13 @@ void System::updateRates(int cong){
         total_external_sites[fam]++;
 
         total_rate = total_rate - external_connection_rate;
-        
+
         external_connection_rate = external_connection_rate + k0*(free_monomers[not_fam]/volume);
-        
+
         for(int i=0; i<conglomerates.size(); i++){
             external_connection_rate = external_connection_rate + k0 * external_sites[not_fam][i] * (1/volume);
         }
         total_rate = total_rate + external_connection_rate;
-        //TODO think about lengths being correct when removed etc
     } else {
 
         total_rate = 0;
@@ -188,7 +219,7 @@ void System::updateRates(int cong){
 
         for (int i = 0; i < conglomerates.size(); i++) { //Loop conglomerates
             if (i != cong) { //Conglomerate can't bind within itself here
-                //For any site on cong, the rate of binding a site on i is k0[i]; [i] = number of sites/volume                
+                //For any site on cong, the rate of binding a site on i is k0[i]; [i] = number of sites/volume
                 external_connection_rate = external_connection_rate + k0 * (external_sites[0][i] * external_sites[1][cong])/volume;
                 external_connection_rate = external_connection_rate + k0 * (external_sites[1][i] * external_sites[0][cong])/volume;
             }
@@ -237,6 +268,15 @@ void System::updateRates(int cong){
         transition_rates[5] = transition_rates[5] + conglomerate_rates[5][cong] * k;
         total_connections[5] = total_connections[5] + conglomerate_rates[5][cong];
         total_rate = total_rate + transition_rates[5];
+
+        if(set_weakened_template_end) {
+            transition_rates[6] = transition_rates[6] - conglomerate_rates[6][cong] * k0 * exp(G_end);
+            total_connections[6] = total_connections[6] - conglomerate_rates[6][cong];
+            conglomerate_rates[6][cong] = conglomerates[cong]->end_unbinding_list.size();
+            transition_rates[6] = transition_rates[6] + conglomerate_rates[6][cong] * k0 * exp(G_end);
+            total_connections[6] = total_connections[6] + conglomerate_rates[6][cong];
+            total_rate = total_rate + transition_rates[6];
+        }
     }
 }
 
@@ -261,7 +301,6 @@ bool System::chooseTransition(double seed){
     double random_number_transition = gen();
     double current_rate = external_connection_rate;
 
-    //TODO site zero might be always the final site?
     int chosen_conglomerate_zero = -1;
     int chosen_conglomerate_one = -1;
     double chosen_site_zero = -1;
@@ -312,13 +351,12 @@ bool System::chooseTransition(double seed){
                     //Need to remove the free monomer contribution to rates
                     //For one monomer family first, rate of monomer monomer binding is k0[M(second)]
                     external_connection_rate = external_connection_rate - k0 * (free_monomers[second]/volume);
-                    
+
                     //For every conglomerate site second, rate of binding 1 monomer family first is k0[M] = k0(1/volume)
                     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
                         external_connection_rate = external_connection_rate - k0 * external_sites[second][i] * (1/volume);
                     }
                     lengths[0]--;
-                    //TODO total external sites?
                     total_external_sites[first]--;
                 }
             } else {
@@ -361,12 +399,12 @@ bool System::chooseTransition(double seed){
                     //Need to remove the free monomer contribution to rates
                     //For one monomer family second, rate of monomer monomer binding is k0[M(first)]
                     external_connection_rate = external_connection_rate - k0 * (free_monomers[first]/volume);
-                    
+
                     //For every conglomerate site first, rate of binding 1 monomer family second is k0[M] = k0(1/volume)
                     for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
                         external_connection_rate = external_connection_rate - k0 * external_sites[first][i] * (1/volume);
                     }
-                                      
+
                     lengths[0]--;
                     total_external_sites[second]--;
                 }
@@ -389,14 +427,12 @@ bool System::chooseTransition(double seed){
 
         //We need to find which sites we are going to use
         double random_number_site_zero = gen();
-
         for(int site_zero = 1; site_zero <= external_sites[first][chosen_conglomerate_zero]; site_zero ++){
             if((site_zero/double(external_sites[first][chosen_conglomerate_zero]))>=(random_number_site_zero/mt19937::max())){
                 chosen_site_zero = site_zero - 1;
                 break;
             }
         }
-
         //We need to find which sites we are going to use
         double random_number_site_one = gen();
 
@@ -406,7 +442,6 @@ bool System::chooseTransition(double seed){
                 break;
             }
         }
-
         //Make new connection between the two sites
         FreeSite * free_site_zero = conglomerates[chosen_conglomerate_zero]->available_free_sites_list[first][chosen_site_zero];
         FreeSite * free_site_one = conglomerates[chosen_conglomerate_one]->available_free_sites_list[second][chosen_site_one];
@@ -466,7 +501,7 @@ bool System::chooseTransition(double seed){
                     output[0]->index = ++conglomerate_index;
                     bool has_template = false;
                     for(auto & pol: output[0]->polymers){
-                        if(pol->family == 0){
+                        if(pol->is_template){
                             has_template = true;
                         }
                     }
@@ -483,7 +518,7 @@ bool System::chooseTransition(double seed){
 
                 } else {
                     //If there is rebinding we can just allow things to continue
-                    if(output[0]->polymers.size()==1 && output[0]->polymers[0]->length == 1){
+                    if((output[0]->polymers.size()==1 && output[0]->polymers[0]->length == 1) && !output[0]->polymers[0]->is_template){
                         //we have a free monomer so we add to list but if monomer count is constant we don't have to
                         if(!monomer_count_is_constant) {
                             int famil = 1;
@@ -499,7 +534,7 @@ bool System::chooseTransition(double seed){
                             external_connection_rate = external_connection_rate + k0 * (free_monomers[not_famil]/volume);
 
                             for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
-                            //Adding one free monomer will increase cong monomer binding rates by k0[M] for each site where [M]=1/volume
+                                //Adding one free monomer will increase cong monomer binding rates by k0[M] for each site where [M]=1/volume
                                 external_connection_rate = external_connection_rate + k0 * external_sites[not_famil][i] * (1/volume);
                             }
                         }
@@ -521,13 +556,12 @@ bool System::chooseTransition(double seed){
             if(!output.empty()){
                 //If there is something in the output, the unbinding has split a conglomerate
                 if(no_rebinding){
-                    int monomers_to_add;
                     //if there is no rebinding, we need to find which conglomerate has the template
                     //we delete the one which hasn't
                     output[0]->index = ++conglomerate_index;
                     bool has_template = false;
                     for(auto & pol: output[0]->polymers){
-                        if(pol->family == 0){
+                        if(pol->is_template){
                             has_template = true;
                         }
                     }
@@ -535,16 +569,14 @@ bool System::chooseTransition(double seed){
                     if(has_template){
                         //add new
                         addConglomerate(output[0]);
-                        monomers_to_add = conglomerates[chosen_conglomerate]->polymers[0]->length;
                         //delete old
                         removeConglomerate(chosen_conglomerate);
                     } else {
-                        monomers_to_add = output[0]->polymers[0]->length;
                         delete output[0];
                     }
                 } else {
                     //If there is rebinding we can just allow things to continue
-                    if(output[0]->polymers.size()==1 && output[0]->polymers[0]->length == 1){
+                    if((output[0]->polymers.size()==1 && output[0]->polymers[0]->length == 1) && !output[0]->polymers[0]->is_template){
                         //we have a free monomer so we add to list but if monomer count is constant we don't have to
                         if(!monomer_count_is_constant) {
                             int famil = 1;
@@ -554,15 +586,15 @@ bool System::chooseTransition(double seed){
                                 not_famil = 1;
                             }
                             free_monomers[famil]++;
-                            
+
                             total_external_sites[famil]++;
                             //Adding one free monomer will increase monomer monomer binding rates by k0[M] for one site
                             external_connection_rate = external_connection_rate + k0 * (free_monomers[not_famil]/volume);
 
                             for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
-                            //Adding one free monomer will increase cong monomer binding rates by k0[M] for each site where [M]=1/volume
+                                //Adding one free monomer will increase cong monomer binding rates by k0[M] for each site where [M]=1/volume
                                 external_connection_rate = external_connection_rate + k0 * external_sites[not_famil][i] * (1/volume);
-                            }                          
+                            }
                         }
                     } else {
                         output[0]->index = ++conglomerate_index;
@@ -608,6 +640,61 @@ bool System::chooseTransition(double seed){
 
             Polymer * removed_polymer = conglomerates[chosen_conglomerate]->chooseNeighboursBind(chosen_bond);
             delete removed_polymer;
+        } else if(chosen_transition == 6 && set_weakened_template_end){
+            //cout << "End Unbinding" << endl;
+            //Unbind from template end
+
+            vector<Conglomerate *> output = conglomerates[chosen_conglomerate]->chooseEndUnbinding(chosen_bond);
+            if(!output.empty()){
+                //If there is something in the output, the unbinding has split a conglomerate
+                if(no_rebinding){
+                    //if there is no rebinding, we need to find which conglomerate has the template
+                    //we delete the one which hasn't
+                    output[0]->index = ++conglomerate_index;
+                    bool has_template = false;
+                    for(auto & pol: output[0]->polymers){
+                        if(pol->is_template){
+                            has_template = true;
+                        }
+                    }
+
+                    if(has_template){
+                        //add new
+                        addConglomerate(output[0]);
+                        //delete old
+                        removeConglomerate(chosen_conglomerate);
+                    } else {
+                        delete output[0];
+                    }
+
+                } else {
+                    //If there is rebinding we can just allow things to continue
+                    if((output[0]->polymers.size()==1 && output[0]->polymers[0]->length == 1) && !output[0]->polymers[0]->is_template){
+                        //we have a free monomer so we add to list but if monomer count is constant we don't have to
+                        if(!monomer_count_is_constant) {
+                            int famil = 1;
+                            int not_famil = 0;
+                            if(output[0]->polymers[0]->family == 0){
+                                famil = 0;
+                                not_famil = 1;
+                            }
+                            free_monomers[famil]++;
+
+                            total_external_sites[famil]++;
+
+                            external_connection_rate = external_connection_rate + k0 * (free_monomers[not_famil]/volume);
+
+                            for(int i=0; i<conglomerates.size(); i++) { //Loop conglomerates
+                                external_connection_rate = external_connection_rate + k0 * external_sites[not_famil][i] * (1/volume);
+                            }
+                        }
+                    } else {
+                        output[0]->index = ++conglomerate_index;
+                        addConglomerate(output[0]);
+                    }
+                }
+            }
+
         }
         updateRates(chosen_conglomerate);
     }
@@ -629,6 +716,7 @@ void System::removeConglomerate(int cong){
             external_connection_rate = external_connection_rate - k0 * (external_sites[1][i] * external_sites[0][cong])/volume;
         }
     }
+    conglomerates[cong]->deleteConglomerate();
     delete conglomerates[cong];
     conglomerates.erase(conglomerates.begin()+cong);
 
@@ -669,6 +757,13 @@ void System::removeConglomerate(int cong){
     total_connections[5] = total_connections[5] - conglomerate_rates[5][cong];
     conglomerate_rates[5].erase(conglomerate_rates[5].begin()+cong);
     total_rate = total_rate + transition_rates[5];
+
+    if(set_weakened_template_end) {
+        transition_rates[6] = transition_rates[6] - conglomerate_rates[6][cong] * k0 * exp(G_end);
+        total_connections[6] = total_connections[6] - conglomerate_rates[6][cong];
+        conglomerate_rates[6].erase(conglomerate_rates[6].begin() + cong);
+        total_rate = total_rate + transition_rates[6];
+    }
 }
 
 void System::addConglomerate(Conglomerate * new_cong){
@@ -727,4 +822,24 @@ void System::addConglomerate(Conglomerate * new_cong){
     transition_rates[5] = transition_rates[5] + conglomerate_rates[5][cong]*k;
     total_connections[5] = total_connections[5] + conglomerate_rates[5][cong];
     total_rate = total_rate + transition_rates[5];
+
+    if(set_weakened_template_end) {
+        conglomerate_rates[6].push_back(conglomerates[cong]->end_unbinding_list.size());
+        transition_rates[6] = transition_rates[6] + conglomerate_rates[6][cong] * k0 * exp(G_end);
+        total_connections[6] = total_connections[6] + conglomerate_rates[6][cong];
+        total_rate = total_rate + transition_rates[6];
+    }
+}
+
+void System::deleteSystem(){
+    for(int i=conglomerates.size()-1; i>0; i--){
+        conglomerates[i]->deleteConglomerate();
+        for(int j=conglomerates[i]->connections.size()-1; j>0; j--){
+            delete conglomerates[i]->connections[j];
+        }
+        for(int j=conglomerates[i]->polymers.size()-1; j>0; j--){
+            delete conglomerates[i]->polymers[j];
+        }
+        delete conglomerates[i];
+    }
 }

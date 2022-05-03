@@ -10,6 +10,7 @@
 #include "Conglomerate.h"
 #include "System.h"
 #include "settings.h"
+#include "unistd.h"
 
 class Tests {
 public:
@@ -20,9 +21,13 @@ public:
     bool testConglomerate();
     bool testMiddleTailUnbinding();
     bool testEndTailUnbinding();
+    bool testWeakenedEndBond();
     bool testPolymerisationEquilibrium();
     bool testDimerisationEquilibrium();
     bool testTailBindEquilibrium();
+    bool testTwoAndThreePolymerCong();
+    bool testGrowthDirections();
+    bool testWeakEndWithGrowthDirections();
 };
 
 

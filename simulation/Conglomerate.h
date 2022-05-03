@@ -36,6 +36,9 @@ public:
     //Holds the free sites of each family
     vector<vector<FreeSite *>> available_free_sites_list; //family<free site list>
 
+    //Holds the end copy-template connections that can break
+    vector<Connection *> end_unbinding_list;
+
     //Holds the head copy-template connections that can break
     vector<Connection *> head_unbinding_list;
 
@@ -78,7 +81,7 @@ public:
     void chooseTailBinding(int chosen_bond);
     Polymer * chooseNeighboursBind(int chosen_bond);
     Polymer * chooseNeighboursUnbind(int chosen_bond);
-
+    void deleteConglomerate();
 };
 
 

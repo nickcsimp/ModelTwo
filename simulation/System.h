@@ -34,6 +34,7 @@ public:
      * 3 = tail binding
      * 4 = neighbours unbind
      * 5 = neighbours bind
+     * 6 = end unbind
      */
     vector<double> transition_rates; //transition<total_rate>
     vector<vector<int>> conglomerate_rates; //transition<conglomerate<number of bonds>>
@@ -45,6 +46,7 @@ public:
     double G_spec;//Specific bond forming free energy
     double G_gen;//Generic bond forming free energy
     double M_eff;//Effective concentration of monomers in zipping
+    double G_end;
     double volume; //Volume of system
 
     bool template_indestructible;
@@ -59,7 +61,7 @@ public:
     void removeConglomerate(int cong);
     void addConglomerate(Conglomerate * new_cong);
 
-
+    void deleteSystem();
 };
 
 
