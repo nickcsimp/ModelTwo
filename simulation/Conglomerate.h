@@ -75,6 +75,7 @@ public:
     void addConnection(Conglomerate * conglomerate_being_joined, Connection * new_connection);
     vector<Conglomerate *> chooseHeadUnbinding(int chosen_bond);
     vector<Conglomerate *> chooseTailUnbinding(int chosen_bond);
+    vector<Conglomerate *> chooseEndUnbinding(int chosen_bond);
     vector<Conglomerate *> checkSeparation(Connection * removed_connection);
     vector<Polymer *> getTree(Polymer * p, vector<Polymer *> connected_polymers);
     void chooseHeadBinding(int chosen_bond);
