@@ -122,13 +122,13 @@ void read_input(string filename){
 
 int main(int argc, char *argv[]) {
 
-    /*if(argc!=2){
+    if(argc!=2){
         cout << "No input file." << endl;
         exit(EXIT_FAILURE);
     }
 
-    string input_file_name = argv[1];*/
-    read_input("/Users/nicksimpson/CLionProjects/ModelTwo/inputlist.csv");
+    string input_file_name = argv[1];
+    read_input(input_file_name);
 
     if(set_run_tests){
         Tests tests;
@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
         double average_length = double(length_count) / double(polymer_count);
 
         ofstream myfile;
-        myfile.open("/Users/nicksimpson/CLionProjects/ModelTwo/LengthDist.csv", std::ios_base::app);
+        myfile.open("../LengthDist.csv", std::ios_base::app);
         if (myfile.is_open()) {
             myfile << set_G_gen << ',' << set_G_bb << ',' << average_length << "\n";
         }
@@ -197,7 +197,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(set_make_images) {
-        ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
+        ofstream fw("input.txt", ofstream::out);
 
         if (fw.is_open()) {
             //Creating all the nodes and joining polymers
