@@ -172,19 +172,25 @@ void System::updateRates(int cong){
         }
         //Remove the conglomerate
         removeConglomerate(cong);
-        //Add a free monomer
-        free_monomers[fam]++;
 
-        total_external_sites[fam]++;
+        if(!monomer_count_is_constant) {
+            //Add a free monomer
+            free_monomers[fam]++;
 
-        total_rate = total_rate - external_connection_rate;
+            total_external_sites[fam]++;
 
-        external_connection_rate = external_connection_rate + k0*(free_monomers[not_fam]/volume);
+            total_rate = total_rate - external_connection_rate;
 
-        for(int i=0; i<conglomerates.size(); i++){
-            external_connection_rate = external_connection_rate + k0 * external_sites[not_fam][i] * (1/volume);
+            external_connection_rate = external_connection_rate + k0*(free_monomers[not_fam]/volume);
+
+            for(int i=0; i<conglomerates.size(); i++){
+                external_connection_rate = external_connection_rate + k0 * external_sites[not_fam][i] * (1/volume);
+            }
+            total_rate = total_rate + external_connection_rate;
+        } else {
+            lengths[0]--;
         }
-        total_rate = total_rate + external_connection_rate;
+
     } else {
 
         total_rate = 0;
@@ -495,7 +501,6 @@ bool System::chooseTransition(double seed){
             if(!output.empty()){
                 //If there is something in the output, the unbinding has split a conglomerate
                 if(no_rebinding){
-                    int monomers_to_add;
                     //if there is no rebinding, we need to find which conglomerate has the template
                     //we delete the one which hasn't
                     output[0]->index = ++conglomerate_index;
@@ -510,9 +515,16 @@ bool System::chooseTransition(double seed){
                         //add new
                         addConglomerate(output[0]);
                         //delete old
+                        if(conglomerates[chosen_conglomerate]->polymers[0]->length == 1){
+                            //A monomer unbinding the template and so we remove this from the lengths because it goes back into monomer pool
+                            lengths[0]--;
+                        }
                         removeConglomerate(chosen_conglomerate);
                     } else {
-                        monomers_to_add = output[0]->polymers[0]->length;
+                        if(output[0]->polymers[0]->length == 1){
+                            //A monomer unbinding the template and so we remove this from the lengths because it goes back into monomer pool
+                            lengths[0]--;
+                        }
                         delete output[0];
                     }
 
@@ -570,8 +582,16 @@ bool System::chooseTransition(double seed){
                         //add new
                         addConglomerate(output[0]);
                         //delete old
+                        if(conglomerates[chosen_conglomerate]->polymers[0]->length == 1){
+                            //A monomer unbinding the template and so we remove this from the lengths because it goes back into monomer pool
+                            lengths[0]--;
+                        }
                         removeConglomerate(chosen_conglomerate);
                     } else {
+                        if(output[0]->polymers[0]->length == 1){
+                            //A monomer unbinding the template and so we remove this from the lengths because it goes back into monomer pool
+                            lengths[0]--;
+                        }
                         delete output[0];
                     }
                 } else {
@@ -662,8 +682,16 @@ bool System::chooseTransition(double seed){
                         //add new
                         addConglomerate(output[0]);
                         //delete old
+                        if(conglomerates[chosen_conglomerate]->polymers[0]->length == 1){
+                            //A monomer unbinding the template and so we remove this from the lengths because it goes back into monomer pool
+                            lengths[0]--;
+                        }
                         removeConglomerate(chosen_conglomerate);
                     } else {
+                        if(output[0]->polymers[0]->length == 1){
+                            //A monomer unbinding the template and so we remove this from the lengths because it goes back into monomer pool
+                            lengths[0]--;
+                        }
                         delete output[0];
                     }
 
@@ -678,6 +706,7 @@ bool System::chooseTransition(double seed){
                                 famil = 0;
                                 not_famil = 1;
                             }
+
                             free_monomers[famil]++;
 
                             total_external_sites[famil]++;

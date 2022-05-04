@@ -1849,13 +1849,18 @@ bool Tests::testTailBindEquilibrium(){
      */
 
     // If G_spec == log(Meff) the tail should spend equal time connected and unconnected
-    vector<double> seeds = {103, 203, 303, 403, 503};
+    vector<double> seeds = {103};
     vector<double> Z;
     vector<double> Z_connected;
     vector<double> Z_unconnected;
     int transition_limit = 1000;
 
+    ofstream f_test;
+    f_test.open("/Users/nicksimpson/PycharmProjects/MyProject/TestInput.txt");
+
     for(auto & seed : seeds) {
+        vector<double> times;
+        vector<double> time_connected;
         //Initialisations
         set_template_indestructible = true;
         set_monomer_count_is_constant = false;
@@ -1900,7 +1905,19 @@ bool Tests::testTailBindEquilibrium(){
             }
             previous_time = system->simulation_time;
             count++;
+            times.push_back(previous_time);
+            time_connected.push_back(hist[0]);
         }
+        f_test << '[' << times[0];
+        for(int i=1; i<times.size(); i++){
+            f_test << ',' << times[i] ;
+        }
+        f_test << ']' << "\n";
+        f_test << '[' << time_connected[0];
+        for(int i=1; i<time_connected.size(); i++){
+            f_test << ',' << time_connected[i] ;
+        }
+        f_test << ']' << "\n";
 
         //The effective concentration makes a difference to the rate so must be included
         Z.push_back((count-transition_limit*set_k0*set_M_eff)/sqrt(transition_limit*set_k0*set_M_eff));
@@ -1939,6 +1956,8 @@ bool Tests::testTailBindEquilibrium(){
     //If we make Gspec = log(Meff/2) then we are more likely to be connected than unconnected
     //Twice as likely connected
     for(auto & seed : seeds) {
+        vector<double> times;
+        vector<double> time_connected;
         //Initialisations
         set_template_indestructible = true;
         set_monomer_count_is_constant = false;
@@ -1983,7 +2002,19 @@ bool Tests::testTailBindEquilibrium(){
             }
             previous_time = system->simulation_time;
             count++;
+            times.push_back(previous_time);
+            time_connected.push_back(hist[0]);
         }
+        f_test << '[' << times[0];
+        for(int i=1; i<times.size(); i++){
+            f_test << ',' << times[i] ;
+        }
+        f_test << ']' << "\n";
+        f_test << '[' << time_connected[0];
+        for(int i=1; i<time_connected.size(); i++){
+            f_test << ',' << time_connected[i] ;
+        }
+        f_test << ']' << "\n";
 
         //Reduced number of transitions as a more favourable state is available
         Z.push_back((count-transition_limit*set_k0*set_M_eff/1.5)/sqrt(transition_limit*set_k0*set_M_eff/1.5));
@@ -2022,6 +2053,8 @@ bool Tests::testTailBindEquilibrium(){
 
     //If we drop the effective conc (so Gspec = log(2*Meff)) then the unconnected state is more likely
     for(auto & seed : seeds) {
+        vector<double> times;
+        vector<double> time_connected;
         //Initialisations
         set_template_indestructible = true;
         set_monomer_count_is_constant = false;
@@ -2066,7 +2099,19 @@ bool Tests::testTailBindEquilibrium(){
             }
             previous_time = system->simulation_time;
             count++;
+            times.push_back(previous_time);
+            time_connected.push_back(hist[0]);
         }
+        f_test << '[' << times[0];
+        for(int i=1; i<times.size(); i++){
+            f_test << ',' << times[i] ;
+        }
+        f_test << ']' << "\n";
+        f_test << '[' << time_connected[0];
+        for(int i=1; i<time_connected.size(); i++){
+            f_test << ',' << time_connected[i] ;
+        }
+        f_test << ']' << "\n";
 
         //Transition count stays the same as previous
         Z.push_back((count-transition_limit*set_k0*100/1.5)/sqrt(transition_limit*100*set_k0/1.5));
@@ -2104,6 +2149,8 @@ bool Tests::testTailBindEquilibrium(){
 
     //If we increase the binding rate, the number of transitions should increase but the probabilities remain the same
     for(auto & seed : seeds) {
+        vector<double> times;
+        vector<double> time_connected;
         //Initialisations
         set_template_indestructible = true;
         set_monomer_count_is_constant = false;
@@ -2148,7 +2195,19 @@ bool Tests::testTailBindEquilibrium(){
             }
             previous_time = system->simulation_time;
             count++;
+            times.push_back(previous_time);
+            time_connected.push_back(hist[0]);
         }
+        f_test << '[' << times[0];
+        for(int i=1; i<times.size(); i++){
+            f_test << ',' << times[i] ;
+        }
+        f_test << ']' << "\n";
+        f_test << '[' << time_connected[0];
+        for(int i=1; i<time_connected.size(); i++){
+            f_test << ',' << time_connected[i] ;
+        }
+        f_test << ']' << "\n";
 
         //Transition count will increase with k0
         Z.push_back((count-transition_limit*set_k0*set_M_eff)/sqrt(transition_limit*set_k0*set_M_eff));
@@ -2180,6 +2239,7 @@ bool Tests::testTailBindEquilibrium(){
         cout << "Confidence level lower than expected." << endl;
         cout << "Z=" << mean << " for the time spent unconnected in simulation 8." << endl;
     }
+    f_test.close();
     return true;
 }
 

@@ -5,7 +5,8 @@
 #ifndef MODELTWO_TESTS_H
 #define MODELTWO_TESTS_H
 
-
+#include <iostream>
+#include <fstream>
 #include "Polymer.h"
 #include "Conglomerate.h"
 #include "System.h"

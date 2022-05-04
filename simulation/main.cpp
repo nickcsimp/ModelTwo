@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
     }
 
     string input_file_name = argv[1];
-    read_input(input_file_name);
+    read_input("/Users/nicksimpson/CLionProjects/ModelTwo/inputlist.csv");
 
     if(set_run_tests){
         Tests tests;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
     ofstream f_hist;
 
     if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {
-        f_hist.open("histogram.txt", ofstream::out);
+        f_hist.open("../histogram.txt", std::ios_base::app);
     }
 
     int polymer_count = 0;
@@ -154,21 +154,24 @@ int main(int argc, char *argv[]) {
     while(transitions_possible && polymer_count<set_polymer_limit){
         transitions_possible = system->chooseTransition(gen());
         count ++;
-        if(set_make_animated_histogram || set_make_final_histogram || set_make_average_length_graph) {
-            if(f_hist.is_open()){
-                f_hist << '[';
-                for(int i = 0; i< system->lengths.size()-1; i++){
-                    f_hist << system->lengths[i] << ", ";
-                }
-                f_hist << system->lengths[system->lengths.size()-1] << ']' << "\n";
-            }
-        }
-
         polymer_count = 0;//Reset count
         for(int i=0; i<system->lengths.size(); i++){ //Loop all polymer lengths
             polymer_count = polymer_count + system->lengths[i]; //Count how many polymers there are
         }
         polymer_count = polymer_count - set_monomers_family_zero-set_monomers_family_one-1; // Remove initial monomers and template polymer
+    }
+    if(set_make_final_histogram) {
+        if(f_hist.is_open()){
+            f_hist << "\"Gbb=" << set_G_bb << ", Ggen=" << set_G_gen << ", Gspec=" << set_G_spec << ", Gend=" << set_G_end << ", Rebinding=" << !set_no_rebinding << "\"\n";
+            if(set_monomer_count_is_constant){
+                lengths[0] = lengths[0]-set_monomers_family_one-set_monomers_family_zero;
+            }
+            f_hist << '[';
+            for(int i = 0; i< system->lengths.size()-1; i++){
+                f_hist << system->lengths[i] << ", ";
+            }
+            f_hist << system->lengths[system->lengths.size()-1] << ']' << "\n";
+        }
     }
 
     f_hist.close();
@@ -183,13 +186,11 @@ int main(int argc, char *argv[]) {
         }
         polymer_count = polymer_count - set_monomers_family_zero-set_monomers_family_one-1; // Remove initial monomers and template polymer
         length_count = length_count - set_monomers_family_zero-set_monomers_family_one-set_template_length; //Remove initial monomers and template polymer
-        cout << "Polymers Created: " << polymer_count << endl;
-        cout << "Full Length Polymers Created: " << full_length_count << endl;
 
         double average_length = double(length_count) / double(polymer_count);
 
         ofstream myfile;
-        myfile.open("../LengthDist.csv", std::ios_base::app);
+        myfile.open("/Users/nicksimpson/CLionProjects/ModelTwo/LengthDist.csv", std::ios_base::app);
         if (myfile.is_open()) {
             myfile << set_G_gen << ',' << set_G_bb << ',' << average_length << "\n";
         }
@@ -197,7 +198,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(set_make_images) {
-        ofstream fw("input.txt", ofstream::out);
+        ofstream fw("/Users/nicksimpson/PycharmProjects/MyProject/input.txt", ofstream::out);
 
         if (fw.is_open()) {
             //Creating all the nodes and joining polymers
