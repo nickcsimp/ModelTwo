@@ -11,8 +11,13 @@
 
 class System {
 public:
-
-    int free_monomers[2];
+    vector<int> free_monomers;
+    /*
+     * 0 = family 0 normal
+     * 1 = family 1 normal
+     * 2 = family 0 end
+     * 3 = family 1 end
+     */
 
     vector<int> lengths;
     double simulation_time;
@@ -26,6 +31,7 @@ public:
     vector<vector<int>> external_sites; //Family<Conglomerate<number of sites>>
     vector<int> total_external_sites; //Family<number of sites>
     double external_connection_rate;
+    double end_external_rate;
 
     /*Transition numbers:
      * 0 = head unbinding
@@ -35,6 +41,7 @@ public:
      * 4 = neighbours unbind
      * 5 = neighbours bind
      * 6 = end unbind
+     * 7 = end binding
      */
     vector<double> transition_rates; //transition<total_rate>
     vector<vector<int>> conglomerate_rates; //transition<conglomerate<number of bonds>>

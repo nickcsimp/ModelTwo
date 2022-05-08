@@ -51,6 +51,9 @@ public:
     //Holds the tail copy-template connections that can form
     vector<Connection *> tail_binding_list;
 
+    //Holds the end copy-template connections that can form
+    vector<Connection *> end_binding_list;
+
     //Holds the neighbours that can polymerise together
     vector<UnconnectedNeighbours *> unconnected_neighbours_list;
 
@@ -74,14 +77,16 @@ public:
     //Choose Transitions
     void addConnection(Conglomerate * conglomerate_being_joined, Connection * new_connection);
     vector<Conglomerate *> chooseHeadUnbinding(int chosen_bond);
-    vector<Conglomerate *> chooseTailUnbinding(int chosen_bond);
     vector<Conglomerate *> chooseEndUnbinding(int chosen_bond);
+    vector<Conglomerate *> chooseTailUnbinding(int chosen_bond);
     vector<Conglomerate *> checkSeparation(Connection * removed_connection);
     vector<Polymer *> getTree(Polymer * p, vector<Polymer *> connected_polymers);
     void chooseHeadBinding(int chosen_bond);
     void chooseTailBinding(int chosen_bond);
+    void chooseEndBinding(int chosen_bond);
     Polymer * chooseNeighboursBind(int chosen_bond);
     Polymer * chooseNeighboursUnbind(int chosen_bond);
+
     void deleteConglomerate();
 };
 

@@ -14,12 +14,14 @@ public:
     int length; //Length used to know how many monomers are in the polymer
     int family; //Family needed to identify which family of monomers are in the polymer
     bool is_template;
+    bool has_end_monomer;
 
-    Polymer(int ind, int len, int fam){
+    Polymer(int ind, int len, int fam, bool has_end){
         index=ind;
         length=len;
         family=fam;
         is_template = false;
+        has_end_monomer = has_end;
     }
 
     bool operator==(Polymer p);

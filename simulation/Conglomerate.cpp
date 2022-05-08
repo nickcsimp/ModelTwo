@@ -14,6 +14,15 @@ Conglomerate::Conglomerate(vector<Connection *> con){
 Conglomerate::Conglomerate(Polymer * pol){
     polymers.push_back(pol);
     updateConglomerate();
+    //cout << "Available free sites: " << available_free_sites_list[0].size() << ' ' << available_free_sites_list[1].size() << ' ' << available_free_sites_list[2].size() << ' ' << available_free_sites_list[3].size() << endl;
+    //cout << "End unbinding: " << end_unbinding_list.size() << endl;
+    //cout << "Head unbinding: " << head_unbinding_list.size() << endl;
+    //cout << "Tail unbinding: " << tail_unbinding_list.size() << endl;
+    //cout << "End binding: " << end_binding_list.size() << endl;
+    //cout << "Tail binding: " << tail_binding_list.size() << endl;
+    //cout << "Head binding: " << head_binding_list.size() << endl;
+    //cout << "Polymerisation: " << unconnected_neighbours_list.size() << endl;
+    //cout << "Depolymerisation: " << connected_neighbours_list.size() << endl;
 }
 
 //Calls all update functions
@@ -75,6 +84,7 @@ void Conglomerate::updatePolymersInConglomerate(){
 //Loop all polymers in the conglomerate
 //Available free sites are created where there is no connection found
 void Conglomerate::updateAvailableFreeSites(){
+    //Clear and delete free sites in list already
     for(int i=0; i<available_free_sites_list.size(); i++){
         for(int j = 0; j<available_free_sites_list[i].size(); j++){
             delete available_free_sites_list[i][j];
@@ -83,11 +93,28 @@ void Conglomerate::updateAvailableFreeSites(){
     available_free_sites_list.clear(); //Clear vector
     available_free_sites_list.emplace_back(); //Create a vector for family 0
     available_free_sites_list.emplace_back(); //Create a vector for family 1
+    if(set_end_monomer){
+        available_free_sites_list.emplace_back(); //Create a vector for family 0 ends
+        available_free_sites_list.emplace_back(); //Create a vector for family 1 ends
+    }
     for(int i=0; i<polymer_connections.size(); i++){ //Loop polymers
         int family = polymers[i]->family;
         for(int j=0; j<polymer_connections[i].size(); j++){ //Loop monomers
             if(polymer_connections[i][j].size()==0){ //If there is not a connection, we create a free site
-                available_free_sites_list[family].push_back(new FreeSite(polymers[i], j));
+                //If there are end monomers and this monomer is an end then we add to family+2 which holds the end monomers
+                if(set_parallel_growth){
+                    if(set_end_monomer && polymers[i]->has_end_monomer && j==0){
+                        available_free_sites_list[family+2].push_back(new FreeSite(polymers[i], j));
+                    } else {
+                        available_free_sites_list[family].push_back(new FreeSite(polymers[i], j));
+                    }
+                } else {
+                    if(set_end_monomer && polymers[i]->has_end_monomer && j==polymers[i]->length-1){
+                        available_free_sites_list[family+2].push_back(new FreeSite(polymers[i], j));
+                    } else {
+                        available_free_sites_list[family].push_back(new FreeSite(polymers[i], j));
+                    }
+                }
             }
         }
     }
@@ -113,6 +140,18 @@ void Conglomerate::updateUnbindingLists(){
                 }
             } else {
                 if (((con->polymers_in_connection[0]->is_template && con->indexes[0] == con->polymers_in_connection[0]->length -1) || (con->polymers_in_connection[1]->is_template && con->indexes[1] == con->polymers_in_connection[1]->length -1))) {
+                    end_monomer = true;
+                }
+            }
+        }
+        //Is the connection part of an end monomer connection?
+        if(set_end_monomer) {
+            if (set_parallel_growth) {
+                if ((con->polymers_in_connection[0]->has_end_monomer && con->indexes[0] == 0) || (con->polymers_in_connection[1]->has_end_monomer && con->indexes[1] == 0)) {
+                    end_monomer = true;
+                }
+            } else {
+                if ((con->polymers_in_connection[0]->has_end_monomer && con->indexes[0] == con->polymers_in_connection[0]->length -1) || (con->polymers_in_connection[1]->has_end_monomer && con->indexes[1] == con->polymers_in_connection[1]->length -1)) {
                     end_monomer = true;
                 }
             }
@@ -176,8 +215,12 @@ void Conglomerate::updateBindingLists(){
     for(int i=0; i<tail_binding_list.size(); i++){
         delete tail_binding_list[i];
     }
+    for(int i=0; i<end_binding_list.size(); i++){
+        delete end_binding_list[i];
+    }
     head_binding_list.clear();
     tail_binding_list.clear();
+    end_binding_list.clear();
     for(int pol=0; pol<polymer_connections.size(); pol++) { //Loop polymers
         for (int mon = 0; mon < polymer_connections[pol].size(); mon++) { //Loop monomers
             if (polymer_connections[pol][mon].empty()) { //No connection on this site
@@ -244,32 +287,68 @@ void Conglomerate::checkBindingValidity(int polymer, int monomer, int direction)
                 growth = -1;
             }
             if(polymer_connections[con_pol_ind][polymer_connections[polymer][monomer + direction][0]->indexes[connected_polymer]+growth*direction].empty()){
-                //Binding possible!!
-                Connection * connection_found = new Connection(polymers[polymer], monomer, polymers[con_pol_ind], polymer_connections[polymer][monomer + direction][0]->indexes[connected_polymer]+growth*direction);
-                //Check if there is a head involved
-                if(monomer == 0 || polymer_connections[polymer][monomer + direction][0]->indexes[connected_polymer]+growth*direction == 0){
-                    //Check this connection has not already been found
-                    bool already_exists = false;
-                    for(auto & con : head_binding_list){
-                        if(*connection_found == *con){
-                            already_exists = true;
+                //See if either point is an end monomer
+                bool p1_end = false;
+                bool p2_end = false;
+                if(set_end_monomer && polymers[polymer]->has_end_monomer){
+                    if(set_parallel_growth && monomer == 0){
+                        p1_end = true;
+                    } else if(!set_parallel_growth && monomer == polymers[polymer]->length -1){
+                        p1_end = true;
+                    }
+                }
+                if(set_end_monomer && polymers[con_pol_ind]->has_end_monomer){
+                    if(set_parallel_growth && polymer_connections[polymer][monomer + direction][0]->indexes[connected_polymer]+growth*direction == 0){
+                        p2_end = true;
+                    } else if(!set_parallel_growth && polymer_connections[polymer][monomer + direction][0]->indexes[connected_polymer]+growth*direction == polymers[con_pol_ind]->length -1){
+                        p2_end = true;
+                    }
+                }
+
+                if(!(p1_end ^ p2_end)) { //Exclusive or so that if one is an end and the other is not then we can't bind
+                    //Binding possible!!
+                    Connection *connection_found = new Connection(polymers[polymer], monomer, polymers[con_pol_ind],
+                                                                  polymer_connections[polymer][monomer +
+                                                                                               direction][0]->indexes[connected_polymer] +
+                                                                  growth * direction);
+                    if(p1_end){ //if p1_end is true then p2_end is true and this is an end connection
+                        //End connection
+                        bool already_exists = false;
+                        for (auto &con: end_binding_list) {
+                            if (*connection_found == *con) {
+                                already_exists = true;
+                            }
                         }
-                    }
-                    if(!already_exists) {
-                        //If it has not been added, then please add
-                        head_binding_list.push_back(connection_found);
-                    }
-                } else {
-                    //Check this connection has not already been found
-                    bool already_exists = false;
-                    for(auto & con : tail_binding_list){
-                        if(*connection_found == *con){
-                            already_exists = true;
+                        if (!already_exists) {
+                            //If it has not been added, then please add
+                            end_binding_list.push_back(connection_found);
                         }
-                    }
-                    if(!already_exists) {
-                        //If it has not been added, then please add
-                        tail_binding_list.push_back(connection_found);
+                    } else if (monomer == 0 ||
+                               polymer_connections[polymer][monomer + direction][0]->indexes[connected_polymer] +
+                               growth * direction == 0) { //Check if there is a head involved
+                        //Check this connection has not already been found
+                        bool already_exists = false;
+                        for (auto &con: head_binding_list) {
+                            if (*connection_found == *con) {
+                                already_exists = true;
+                            }
+                        }
+                        if (!already_exists) {
+                            //If it has not been added, then please add
+                            head_binding_list.push_back(connection_found);
+                        }
+                    } else {
+                        //Check this connection has not already been found
+                        bool already_exists = false;
+                        for (auto &con: tail_binding_list) {
+                            if (*connection_found == *con) {
+                                already_exists = true;
+                            }
+                        }
+                        if (!already_exists) {
+                            //If it has not been added, then please add
+                            tail_binding_list.push_back(connection_found);
+                        }
                     }
                 }
             }
@@ -286,55 +365,72 @@ void Conglomerate::updateNeighboursBindingList(){
         delete unconnected_neighbours_list[i];
     }
     unconnected_neighbours_list.clear();
-    for(int pol = 0; pol<polymer_connections.size(); pol++){ //Loop polymers
-        if(!polymer_connections[pol][0].empty()){ //if the first monomer (head) has a connection, then we need to check the neighbour
-            //Find polymer connected to *the* polymer
-            int connected_polymer;
-            if (*polymer_connections[pol][0][0]->polymers_in_connection[0] == *polymers[pol]) {
-                connected_polymer = 1;
-            } else {
-                connected_polymer = 0;
-            }
+    for(int pol = 0; pol<polymer_connections.size(); pol++) { //Loop polymers
+        //If we have parallel growth, end monomers, and this polymer has an end monomer, then we cant grow in this direction
+        if (!(set_end_monomer && polymers[pol]->has_end_monomer && set_parallel_growth)) {
+            if (!polymer_connections[pol][0].empty()) { //if the first monomer (head) has a connection, then we need to check the neighbour
+                //Find polymer connected to *the* polymer
+                int connected_polymer;
+                if (*polymer_connections[pol][0][0]->polymers_in_connection[0] == *polymers[pol]) {
+                    connected_polymer = 1;
+                } else {
+                    connected_polymer = 0;
+                }
 
-            bool neighbour_possible = false;
-            if(set_parallel_growth && polymer_connections[pol][0][0]->indexes[connected_polymer] != 0){
-                //If the connection is on the first monomer of the connected polymer and the growth is parallel then no neighbour is possible
-                neighbour_possible = true;
-            } else if(!set_parallel_growth && (polymer_connections[pol][0][0]->indexes[connected_polymer] != (polymer_connections[pol][0][0]->polymers_in_connection[connected_polymer]->length - 1))) {
-                //If the connection is on the final monomer of the connected polymer and the growth is antiparallel then no neighbour is possible
-                neighbour_possible = true;
-            }
+                bool neighbour_possible = false;
+                if (set_parallel_growth && polymer_connections[pol][0][0]->indexes[connected_polymer] != 0) {
+                    //If the connection is on the first monomer of the connected polymer and the growth is parallel then no neighbour is possible
+                    neighbour_possible = true;
+                } else if (!set_parallel_growth && (polymer_connections[pol][0][0]->indexes[connected_polymer] !=
+                                                    (polymer_connections[pol][0][0]->polymers_in_connection[connected_polymer]->length -
+                                                     1))) {
+                    //If the connection is on the final monomer of the connected polymer and the growth is antiparallel then no neighbour is possible
+                    neighbour_possible = true;
+                }
 
-            if(neighbour_possible){
-                //Find the polymer in polymers list
-                int con_pol_ind = -1;
-                for(int i = 0; i< polymers.size(); i++){
-                    if(*polymers[i] == * polymer_connections[pol][0][0]->polymers_in_connection[connected_polymer]){
-                        con_pol_ind = i;
+                if (neighbour_possible) {
+                    //Find the polymer in polymers list
+                    int con_pol_ind = -1;
+                    for (int i = 0; i < polymers.size(); i++) {
+                        if (*polymers[i] ==
+                            *polymer_connections[pol][0][0]->polymers_in_connection[connected_polymer]) {
+                            con_pol_ind = i;
+                        }
+                    }
+
+                    int growth = 1;
+                    if (set_parallel_growth) {
+                        growth = -1;
+                    }
+                    //If there is not a connection on the neighbouring monomer of the connected polymer, there will be no neighbours binding
+                    if (!polymer_connections[con_pol_ind][polymer_connections[pol][0][0]->indexes[connected_polymer] +
+                                                          growth].empty()) {
+                        //Find polymer connected to the connected polymer - the neighbour
+                        int neighbour;
+                        if (*polymer_connections[con_pol_ind][
+                                polymer_connections[pol][0][0]->indexes[connected_polymer] +
+                                growth][0]->polymers_in_connection[0] == *polymers[con_pol_ind]) {
+                            neighbour = 1;
+                        } else {
+                            neighbour = 0;
+                        }
+                        Polymer *neighbour_polymer = polymer_connections[con_pol_ind][
+                                polymer_connections[pol][0][0]->indexes[connected_polymer] +
+                                growth][0]->polymers_in_connection[neighbour];
+                        //Now if the neighbour is connected with its final monomer, then we have neighbours!!!!
+                        if (polymer_connections[con_pol_ind][
+                                    polymer_connections[pol][0][0]->indexes[connected_polymer] +
+                                    growth][0]->indexes[neighbour] == neighbour_polymer->length - 1) {
+                            //If there is antiparallel growth, end monomers, and the neighbour polymer has an end monomer, then we cant grow in this direction
+                            if (!(set_end_monomer && neighbour_polymer->has_end_monomer && !set_parallel_growth)) {
+                                unconnected_neighbours_list.push_back(
+                                        new UnconnectedNeighbours(neighbour_polymer, polymers[pol]));
+                            }
+                        }
                     }
                 }
 
-                int growth = 1;
-                if(set_parallel_growth){
-                    growth = -1;
-                }
-                //If there is not a connection on the neighbouring monomer of the connected polymer, there will be no neighbours binding
-                if(!polymer_connections[con_pol_ind][polymer_connections[pol][0][0]->indexes[connected_polymer]+growth].empty()){
-                    //Find polymer connected to the connected polymer - the neighbour
-                    int neighbour;
-                    if (*polymer_connections[con_pol_ind][polymer_connections[pol][0][0]->indexes[connected_polymer]+growth][0]->polymers_in_connection[0] == *polymers[con_pol_ind]) {
-                        neighbour = 1;
-                    } else {
-                        neighbour = 0;
-                    }
-                    Polymer * neighbour_polymer = polymer_connections[con_pol_ind][polymer_connections[pol][0][0]->indexes[connected_polymer]+growth][0]->polymers_in_connection[neighbour];
-                    //Now if the neighbour is connected with its final monomer, then we have neighbours!!!!
-                    if(polymer_connections[con_pol_ind][polymer_connections[pol][0][0]->indexes[connected_polymer]+growth][0]->indexes[neighbour] == neighbour_polymer->length-1){
-                        unconnected_neighbours_list.push_back(new UnconnectedNeighbours(neighbour_polymer, polymers[pol]));
-                    }
-                }
             }
-
         }
     }
 }
@@ -441,7 +537,6 @@ vector<Conglomerate *> Conglomerate::chooseEndUnbinding(int chosen_bond){
     delete delete_me;
     //Update conglomerate
     updateConglomerate();
-
     return output;
 }
 
@@ -666,6 +761,16 @@ void Conglomerate::chooseTailBinding(int chosen_bond){
     updateConglomerate();
 }
 
+//Add chosen bond to connection list
+//Update conglomerate
+void Conglomerate::chooseEndBinding(int chosen_bond){
+    //Add connection
+    connections.push_back(new Connection(end_binding_list[chosen_bond]->polymers_in_connection[0], end_binding_list[chosen_bond]->indexes[0], end_binding_list[chosen_bond]->polymers_in_connection[1], end_binding_list[chosen_bond]->indexes[1]));
+    //Update conglomerate
+    updateConglomerate();
+}
+
+
 //Join polymers
 //Update connections
 //Update conglomerate
@@ -700,6 +805,9 @@ Polymer * Conglomerate::chooseNeighboursBind(int chosen_bond){
             }
         }
     }
+    if(!set_parallel_growth && set_end_monomer && polymer_to_be_removed->has_end_monomer){
+        polymer_being_extended->has_end_monomer = true;
+    }
 
     //Remove polymer
     polymers.erase(polymers.begin()+ptbr_index);
@@ -719,7 +827,16 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
     //Index starts from 0 and is the smaller of the two in the interaction
     //Therefore the con_neighbour switching a polymer length 8 into a 2 and 6 will have index 1
     //This polymer has length 6=8-1-1
-    Polymer * new_polymer = new Polymer(-1, polymer_being_separated->length - connected_neighbours_list[chosen_bond]->index -1, polymer_being_separated->family);
+    Polymer * new_polymer;
+    if(set_end_monomer && !set_parallel_growth && polymer_being_separated->has_end_monomer){
+        //If antiparallel growth, the spearated monomer will lose its end and the new polymer will gain it
+        new_polymer = new Polymer(-1, polymer_being_separated->length - connected_neighbours_list[chosen_bond]->index -1, polymer_being_separated->family, true);
+        polymer_being_separated->has_end_monomer = false;
+    } else {
+        //With parallel growth (or no set end monomer or pbs does not have a head) the new polymer will have no end
+        new_polymer = new Polymer(-1, polymer_being_separated->length - connected_neighbours_list[chosen_bond]->index -1, polymer_being_separated->family, false);
+    }
+
     //Shorten polymer being separated
     //The polymer being separated keeps its head, so it has a length index+1 (1+1=2)
     polymer_being_separated->length = connected_neighbours_list[chosen_bond]->index + 1;
@@ -758,10 +875,10 @@ Polymer * Conglomerate::chooseNeighboursUnbind(int chosen_bond){
 
 void Conglomerate::deleteConglomerate(){
     for(int i=tail_binding_list.size()-1; i>0; i--){
-        delete tail_unbinding_list[i];
+        delete tail_binding_list[i];
     }
     for(int i=head_binding_list.size()-1; i>0; i--){
-        delete head_unbinding_list[i];
+        delete head_binding_list[i];
     }
     for(int i=connected_neighbours_list.size()-1; i>0; i--){
         delete connected_neighbours_list[i];
