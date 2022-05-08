@@ -29,6 +29,8 @@ public:
     bool testTwoAndThreePolymerCong();
     bool testGrowthDirections();
     bool testWeakEndWithGrowthDirections();
+    bool testEndMonomer();
+    bool testCorrectMonomerBinding();
 };
 
 

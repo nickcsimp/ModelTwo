@@ -23,7 +23,6 @@ extern int set_template_length;
 extern int set_transition_limit;
 extern int set_time_limit;
 extern int set_polymer_limit;
-extern bool set_run_tests;
 extern bool set_make_animated_histogram;
 extern bool set_make_final_histogram;
 extern bool set_make_average_length_graph;
@@ -32,4 +31,8 @@ extern bool set_make_images;
 extern double set_volume;
 extern bool set_weakened_template_end;
 extern bool set_parallel_growth;
+extern bool set_end_monomer;
+extern int set_end_monomers_family_zero;
+extern int set_end_monomers_family_one;
+
 #endif //MODELTWO_SETTINGS_H

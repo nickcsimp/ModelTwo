@@ -6,6 +6,9 @@
 
 void Tests::run(){
 
+    bool semfz = set_end_monomers_family_zero;
+    bool semfo = set_end_monomers_family_one;
+    bool sem = set_end_monomer;
     bool sti = set_template_indestructible;
     bool smcic = set_monomer_count_is_constant;
     bool snr = set_no_rebinding;
@@ -18,10 +21,14 @@ void Tests::run(){
     double sGspec = set_G_spec;
     double sGgen = set_G_gen;
     double sMeff = set_M_eff;
+    double sGend = set_G_end;
     int smfz = set_monomers_family_zero;
     int smfo = set_monomers_family_one;
     int stl = set_template_length;
     int strl = set_transition_limit;
+    int spl = set_polymer_limit;
+    double stil = set_time_limit;
+    double sv = set_volume;
 
     bool srt = set_run_tests;
     bool smah = set_make_animated_histogram;
@@ -29,6 +36,8 @@ void Tests::run(){
     bool smalg = set_make_average_length_graph;
     bool smldp = set_make_length_distribution_plots;
     bool smi = set_make_images;
+
+    set_end_monomer = false;
 
     cout << "Testing Conglomerate Initialisation...." << endl;
     if(!testConglomerateInitialissation()){
@@ -84,9 +93,21 @@ void Tests::run(){
     if(!testWeakEndWithGrowthDirections()) {
         cout << "Error: testWeakEndWithGrowthDirections()" << endl;
     }
+    cout << "Testing End Monomer...." << endl;
+    if(!testEndMonomer()) {
+        cout << "Error: testEndMonomer()" << endl;
+    }
+    cout << "Testing Correct Monomer Binding...." << endl;
+    if(!testCorrectMonomerBinding()) {
+        cout << "Error: testCorrectMonomerBinding()" << endl;
+    }
+
 
     cout << "Tests Complete" << endl;
 
+    set_end_monomers_family_zero = semfz;
+    set_end_monomers_family_one = semfo;
+    set_end_monomer = sem;
     set_parallel_growth = spg;
     set_template_indestructible = sti;
     set_monomer_count_is_constant = smcic;
@@ -98,11 +119,15 @@ void Tests::run(){
     set_G_bb = sGbb;
     set_G_spec = sGspec;
     set_G_gen = sGgen;
+    set_G_end = sGend;
     set_M_eff = sMeff;
     set_monomers_family_zero = smfz;
     set_monomers_family_one = smfo;
     set_template_length = stl;
     set_transition_limit = strl;
+    set_polymer_limit = spl;
+    set_time_limit = stil;
+    set_volume = sv;
 
     set_run_tests = srt;
     set_make_animated_histogram = smah;
@@ -116,7 +141,7 @@ bool Tests::testConglomerateInitialissation() {
 
     set_weakened_template_end = false;
 
-    Polymer * polymer = new Polymer(1, 6, 0);
+    Polymer * polymer = new Polymer(1, 6, 0, false);
     Conglomerate * conglomerate = new Conglomerate(polymer);
 
     if(conglomerate->polymers.size()!=1){
@@ -183,7 +208,7 @@ bool Tests::testConglomerateInitialissation() {
     conglomerate->deleteConglomerate();
     delete conglomerate;
 
-    Polymer * poly = new Polymer(2, 1, 1);
+    Polymer * poly = new Polymer(2, 1, 1, false);
     Connection * con = new Connection(polymer, 5, poly, 0);
     vector<Connection *> connections;
     connections.push_back(con);
@@ -292,7 +317,7 @@ bool Tests::testConglomerateUpdate() {
 
     set_weakened_template_end = false;
 
-    Polymer * polymer = new Polymer(1, 6, 0);
+    Polymer * polymer = new Polymer(1, 6, 0, false);
     Conglomerate * conglomerate = new Conglomerate(polymer);
     conglomerate->updateConglomerate();
 
@@ -360,7 +385,7 @@ bool Tests::testConglomerateUpdate() {
     conglomerate->deleteConglomerate();
     delete conglomerate;
 
-    Polymer * poly = new Polymer(2, 1, 1);
+    Polymer * poly = new Polymer(2, 1, 1, false);
     Connection * con = new Connection(polymer, 5, poly, 0);
     vector<Connection *> connections;
     connections.push_back(con);
@@ -484,9 +509,9 @@ bool Tests::testConglomerateUpdate() {
 
 bool Tests::testConglomerateAddConnection() {
     set_weakened_template_end = false;
-    Polymer * polymer = new Polymer(1, 6,0);
+    Polymer * polymer = new Polymer(1, 6,0, false);
     Conglomerate * conglomerate = new Conglomerate(polymer);
-    Polymer * poly = new Polymer(2, 1, 1);
+    Polymer * poly = new Polymer(2, 1, 1, false);
     Conglomerate * cong = new Conglomerate(poly);
     Connection * con = new Connection(polymer, 5, poly, 0);
     conglomerate->addConnection(cong, con);
@@ -631,9 +656,9 @@ bool Tests::testConglomerateAddConnection() {
 
 bool Tests::testConglomerate() {
     set_weakened_template_end = false;
-    Polymer* p_one = new Polymer(1, 6, 0);
-    Polymer* p_two = new Polymer(2, 1, 1);
-    Polymer* p_three = new Polymer(3, 1, 1);
+    Polymer* p_one = new Polymer(1, 6, 0, false);
+    Polymer* p_two = new Polymer(2, 1, 1, false);
+    Polymer* p_three = new Polymer(3, 1, 1, false);
 
     Connection * con_one = new Connection(p_one, 4, p_two, 0);
     Connection * con_two = new Connection(p_one, 5, p_three, 0);
@@ -714,9 +739,9 @@ bool Tests::testConglomerate() {
 bool Tests::testMiddleTailUnbinding(){
     set_weakened_template_end = false;
     set_parallel_growth = true;
-    Polymer* p_one = new Polymer(1, 6, 0);
+    Polymer* p_one = new Polymer(1, 6, 0, false);
     p_one->is_template = true;
-    Polymer* p_two = new Polymer(2, 6, 1);
+    Polymer* p_two = new Polymer(2, 6, 1, false);
 
     Connection * con_one = new Connection(p_one, 0, p_two, 0);
     Connection * con_two = new Connection(p_one, 1, p_two, 1);
@@ -819,9 +844,9 @@ bool Tests::testMiddleTailUnbinding(){
 bool Tests::testEndTailUnbinding(){
     set_weakened_template_end = false;
     set_parallel_growth = true;
-    Polymer* p_one = new Polymer(1, 6, 0);
+    Polymer* p_one = new Polymer(1, 6, 0, false);
     p_one->is_template = true;
-    Polymer* p_two = new Polymer(2, 5, 1);
+    Polymer* p_two = new Polymer(2, 5, 1, false);
 
     Connection * con_two = new Connection(p_one, 1, p_two, 0);
     Connection * con_three = new Connection(p_one, 2, p_two, 1);
@@ -941,6 +966,7 @@ bool Tests::testWeakenedEndBond(){
         set_no_rebinding = false;
         set_weakened_template_end = true;
         set_seed = seed;
+        set_volume = 1;
         set_k = 1;
         set_k0 = 1;
         set_G_bb = -1;
@@ -1035,9 +1061,9 @@ bool Tests::testWeakenedEndBond(){
 
         mt19937 gen(seed);
 
-        Polymer *template_polymer = new Polymer(-1, 3, 0);
+        Polymer *template_polymer = new Polymer(-1, 3, 0, false);
         template_polymer->is_template = true;
-        Polymer *copy_polymer = new Polymer(-1, 3, 1);
+        Polymer *copy_polymer = new Polymer(-1, 3, 1, false);
 
         Connection * con = new Connection(template_polymer, 1, copy_polymer, 2);
         Conglomerate * cong = new Conglomerate({con});
@@ -1124,9 +1150,9 @@ bool Tests::testWeakenedEndBond(){
 
         mt19937 gen(seed);
 
-        Polymer *template_polymer = new Polymer(-1, 3, 0);
+        Polymer *template_polymer = new Polymer(-1, 3, 0, false);
         template_polymer->is_template = true;
-        Polymer *copy_polymer = new Polymer(-1, 3, 1);
+        Polymer *copy_polymer = new Polymer(-1, 3, 1, false);
 
         Connection * con = new Connection(template_polymer, 1, copy_polymer, 2);
         Conglomerate * cong = new Conglomerate({con});
@@ -1263,8 +1289,8 @@ bool Tests::testWeakenedEndBond(){
 }
 
 bool Tests::testTwoAndThreePolymerCong(){
-    Polymer *template_polymer = new Polymer(1, 3, 0);
-    Polymer *copy_polymer = new Polymer(2, 2, 1);
+    Polymer *template_polymer = new Polymer(1, 3, 0, false);
+    Polymer *copy_polymer = new Polymer(2, 2, 1, false);
 
     Connection * con = new Connection(template_polymer, 1, copy_polymer, 0);
     Conglomerate * conglomerate = new Conglomerate({con});
@@ -1880,8 +1906,8 @@ bool Tests::testTailBindEquilibrium(){
 
         mt19937 gen(seed);
 
-        Polymer *template_polymer = new Polymer(-1, 3, 0);
-        Polymer *copy_polymer = new Polymer(-1, 2, 1);
+        Polymer *template_polymer = new Polymer(-1, 3, 0, false);
+        Polymer *copy_polymer = new Polymer(-1, 2, 1, false);
 
         Connection * con = new Connection(template_polymer, 1, copy_polymer, 0);
         Conglomerate * cong = new Conglomerate({con});
@@ -1977,8 +2003,8 @@ bool Tests::testTailBindEquilibrium(){
 
         mt19937 gen(seed);
 
-        Polymer *template_polymer = new Polymer(-1, 3, 0);
-        Polymer *copy_polymer = new Polymer(-1, 2, 1);
+        Polymer *template_polymer = new Polymer(-1, 3, 0, false);
+        Polymer *copy_polymer = new Polymer(-1, 2, 1, false);
 
         Connection * con = new Connection(template_polymer, 1, copy_polymer, 0);
         Conglomerate * cong = new Conglomerate({con});
@@ -2074,8 +2100,8 @@ bool Tests::testTailBindEquilibrium(){
 
         mt19937 gen(seed);
 
-        Polymer *template_polymer = new Polymer(-1, 3, 0);
-        Polymer *copy_polymer = new Polymer(-1, 2, 1);
+        Polymer *template_polymer = new Polymer(-1, 3, 0, false);
+        Polymer *copy_polymer = new Polymer(-1, 2, 1, false);
 
         Connection * con = new Connection(template_polymer, 1, copy_polymer, 0);
         Conglomerate * cong = new Conglomerate({con});
@@ -2170,8 +2196,8 @@ bool Tests::testTailBindEquilibrium(){
 
         mt19937 gen(seed);
 
-        Polymer *template_polymer = new Polymer(-1, 3, 0);
-        Polymer *copy_polymer = new Polymer(-1, 2, 1);
+        Polymer *template_polymer = new Polymer(-1, 3, 0, false);
+        Polymer *copy_polymer = new Polymer(-1, 2, 1, false);
 
         Connection * con = new Connection(template_polymer, 1, copy_polymer, 0);
         Conglomerate * cong = new Conglomerate({con});
@@ -2248,8 +2274,8 @@ bool Tests::testGrowthDirections(){
     set_weakened_template_end = false;
     set_parallel_growth = false;
 
-    Polymer * polymer = new Polymer(1, 6, 0);
-    Polymer * poly = new Polymer(2, 3, 1);
+    Polymer * polymer = new Polymer(1, 6, 0, false);
+    Polymer * poly = new Polymer(2, 3, 1, false);
     Connection * con = new Connection(polymer, 5, poly, 0);
     vector<Connection *> connections;
     connections.push_back(con);
@@ -2728,12 +2754,12 @@ bool Tests::testGrowthDirections(){
 
 
 bool Tests::testWeakEndWithGrowthDirections(){
-    //Repeat all of testGrowthDirections but with a weakened end
+    //Repeat all of testGrowthDirections but with a weakened end monomer
     set_weakened_template_end = true;
     set_parallel_growth = false;
 
-    Polymer * polymer = new Polymer(1, 6, 0);
-    Polymer * poly = new Polymer(2, 3, 1);
+    Polymer * polymer = new Polymer(1, 6, 0, false);
+    Polymer * poly = new Polymer(2, 3, 1, false);
     Connection * con = new Connection(polymer, 5, poly, 0);
     polymer->is_template = true;
     vector<Connection *> connections;
@@ -3161,3 +3187,416 @@ bool Tests::testWeakEndWithGrowthDirections(){
     return true;
 }
 
+
+bool Tests::testEndMonomer(){
+    set_parallel_growth = true;
+    set_end_monomer = true;
+    set_weakened_template_end = false;
+    //Repeat the head and tail experiments below but with the weakened bond active
+
+    // 1 free monomer and a template length 1
+    // Every interaction is with the `end' monomer so Gbb and Gspec and Ggen should make no difference
+    // If G_end = ln(2) then we will be unconnected twice as much as connected
+    vector<double> seeds = {101, 201, 301, 401, 501};
+    vector<double> Z;
+    vector<double> Z_connected;
+    vector<double> Z_unconnected;
+    int transition_limit = 1000;
+    for(auto & seed : seeds) {
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_weakened_template_end = true;
+        set_seed = seed;
+        set_volume = 1;
+        set_k = 1;
+        set_k0 = 1;
+        set_G_bb = -1;
+        set_G_spec = 1;
+        set_G_gen = -(1+log(0.5));
+        set_M_eff = 100;
+        set_G_end = log(2);
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_end_monomers_family_zero = 0;
+        set_end_monomers_family_one = 1;
+        set_template_length = 1;
+        set_transition_limit = 1000;
+
+
+        mt19937 gen(seed);
+
+        System *system = new System();
+
+        int count = 0;
+
+        vector<double> hist = {0, 0};
+        double previous_time = 0;
+
+        while (previous_time < transition_limit) {
+            system->chooseTransition(gen());
+            if (system->conglomerates[0]->polymers.size() == 2) {
+                //Now connected so we add time to unconnected list
+                hist[1] = hist[1] + system->simulation_time - previous_time;
+            } else if (system->conglomerates[0]->polymers.size() == 1) {
+                //Now unconnected so we add time to connected list
+                hist[0] = hist[0] + system->simulation_time - previous_time;
+            }
+            previous_time = system->simulation_time;
+            count++;
+        }
+
+        // Total transitions will increase with the binding rate and the transition limit but rates are 1/sec so no factor
+        Z.push_back((count-transition_limit*set_k0*4/3)/sqrt(transition_limit*set_k0*4/3));
+        //We have the two rates the same so the time spent should be equal
+        Z_connected.push_back((hist[0]-transition_limit*0.33)/sqrt(transition_limit*0.33));
+        Z_unconnected.push_back((hist[1]-transition_limit*0.66)/sqrt(transition_limit*0.66));
+    }
+
+    double sum = accumulate(Z.begin(), Z.end(), 0.0);
+    double mean = sum/Z.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the number of transitions in the simulation 0.1."<< endl;
+    }
+
+    sum = accumulate(Z_connected.begin(), Z_connected.end(), 0.0);
+    mean = sum/Z_connected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent connected in simulation 0.1." << endl;
+    }
+
+    sum = accumulate(Z_unconnected.begin(), Z_unconnected.end(), 0.0);
+    mean = sum/Z_unconnected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent unconnected in simulation 0.1." << endl;
+    }
+
+
+    //Template length 2
+    //Copy length 2 attached by the tail on index 1
+    //Tail should flip between the end monomer
+    // If G_end is ln(2*Meff) we are twice as likely to be unconnected
+    seeds = {103, 203, 303, 403, 503};
+    Z.clear();
+    Z_connected.clear();
+    Z_unconnected.clear();
+
+    for(auto & seed : seeds) {
+        //Initialisations
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_weakened_template_end = true;
+        set_seed = seed;
+        set_k = 0.1;
+        set_k0 = 0.1;
+        set_G_bb = -100000000;
+        set_G_spec = -1000000;
+        set_G_gen = -1000000;
+        set_M_eff = 10;
+        set_G_end = log(20);
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_end_monomers_family_zero = 0;
+        set_end_monomers_family_one = 0;
+        set_template_length = 0;
+        set_transition_limit = 1000;
+
+        mt19937 gen(seed);
+
+        Polymer *template_polymer = new Polymer(-1, 2, 0, true);
+        template_polymer->is_template = true;
+        Polymer *copy_polymer = new Polymer(-1, 2, 1, true);
+
+        Connection * con = new Connection(template_polymer, 1, copy_polymer, 1);
+        Conglomerate * cong = new Conglomerate({con});
+        System *system = new System(cong);
+
+        int count = 0;
+
+        vector<double> hist = {0, 0};
+        double previous_time = 0;
+
+        while (previous_time < transition_limit) {
+            system->chooseTransition(gen());
+            if (system->conglomerates.size() == 1) {
+                if(system->conglomerates[0]->connections.size()==2){
+                    //Now connected so we add time to unconnected list
+                    hist[1] = hist[1] + system->simulation_time - previous_time;
+                } else if (system->conglomerates[0]->connections.size() == 1) {
+                    //Now unconnected so we add time to connected list
+                    hist[0] = hist[0] + system->simulation_time - previous_time;
+                }
+            }
+            previous_time = system->simulation_time;
+            count++;
+
+        }
+
+        //The effective concentration makes a difference to the rate so must be included
+        Z.push_back((count-transition_limit*set_k0*set_M_eff*4/3)/sqrt(transition_limit*set_k0*set_M_eff*4/3));
+        //Equal times are expected for each state
+        Z_connected.push_back((hist[0]-transition_limit*0.33)/sqrt(transition_limit*033));
+        Z_unconnected.push_back((hist[1]-transition_limit*0.66)/sqrt(transition_limit*0.66));
+    }
+
+    sum = accumulate(Z.begin(), Z.end(), 0.0);
+    mean = sum/Z.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the number of transitions in the simulation 0.2."<< endl;
+    }
+
+    sum = accumulate(Z_connected.begin(), Z_connected.end(), 0.0);
+    mean = sum/Z_connected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent connected in simulation 0.2." << endl;
+    }
+
+    sum = accumulate(Z_unconnected.begin(), Z_unconnected.end(), 0.0);
+    mean = sum/Z_unconnected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent unconnected in simulation 0.2." << endl;
+    }
+
+
+    //Template length 2
+    //Copy length 2 attached by the tail on index 1
+    //Tail should flip between the end monomer
+    // If G_end is ln(2*Meff) we are twice as likely to be unconnected
+    // halve the rate, halve the transitions
+    seeds = {103, 203, 303, 403, 503};
+    Z.clear();
+    Z_connected.clear();
+    Z_unconnected.clear();
+
+    for(auto & seed : seeds) {
+        //Initialisations
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_weakened_template_end = true;
+        set_seed = seed;
+        set_k = 0.1;
+        set_k0 = 0.05;
+        set_G_bb = -100000000;
+        set_G_spec = -1000000;
+        set_G_gen = -1000000;
+        set_M_eff = 10;
+        set_G_end = log(20);
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_end_monomers_family_zero = 0;
+        set_end_monomers_family_one = 0;
+        set_template_length = 0;
+        set_transition_limit = 10;
+
+        mt19937 gen(seed);
+
+        Polymer *template_polymer = new Polymer(-1, 2, 0, true);
+        template_polymer->is_template = true;
+        Polymer *copy_polymer = new Polymer(-1, 2, 1, true);
+
+        Connection * con = new Connection(template_polymer, 1, copy_polymer, 1);
+        Conglomerate * cong = new Conglomerate({con});
+        System *system = new System(cong);
+
+        int count = 0;
+
+        vector<double> hist = {0, 0};
+        double previous_time = 0;
+
+        while (previous_time < transition_limit) {
+            system->chooseTransition(gen());
+            if (system->conglomerates.size() == 1) {
+                if(system->conglomerates[0]->connections.size()==2){
+                    //Now connected so we add time to unconnected list
+                    hist[1] = hist[1] + system->simulation_time - previous_time;
+                } else if (system->conglomerates[0]->connections.size() == 1) {
+                    //Now unconnected so we add time to connected list
+                    hist[0] = hist[0] + system->simulation_time - previous_time;
+                }
+            }
+            previous_time = system->simulation_time;
+            count++;
+
+        }
+
+        //The effective concentration makes a difference to the rate so must be included
+        Z.push_back((count-transition_limit*set_k0*set_M_eff*4/3)/sqrt(transition_limit*set_k0*set_M_eff*4/3));
+        //Equal times are expected for each state
+        Z_connected.push_back((hist[0]-transition_limit*0.33)/sqrt(transition_limit*033));
+        Z_unconnected.push_back((hist[1]-transition_limit*0.66)/sqrt(transition_limit*0.66));
+    }
+
+    sum = accumulate(Z.begin(), Z.end(), 0.0);
+    mean = sum/Z.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the number of transitions in the simulation 0.3."<< endl;
+    }
+
+    sum = accumulate(Z_connected.begin(), Z_connected.end(), 0.0);
+    mean = sum/Z_connected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent connected in simulation 0.3." << endl;
+    }
+
+    sum = accumulate(Z_unconnected.begin(), Z_unconnected.end(), 0.0);
+    mean = sum/Z_unconnected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent unconnected in simulation 0.3." << endl;
+    }
+
+    // 1 free monomer and a template length 1
+    // Every interaction is with the `end' monomer so Gbb and Gspec and Ggen should make no difference
+    // If G_end = ln(2) then we will be unconnected twice as much as connected
+    // Now change G_end = ln(4) so we spend more time unconnected but increase Ggen loads so we want to be connected
+    seeds = {101, 201, 301, 401, 501};
+    Z.clear();
+    Z_connected.clear();
+    Z_unconnected.clear();
+
+    for(auto & seed : seeds) {
+        set_template_indestructible = true;
+        set_monomer_count_is_constant = false;
+        set_no_rebinding = false;
+        set_weakened_template_end = true;
+        set_seed = seed;
+        set_k = 1;
+        set_k0 = 1;
+        set_G_bb = -1;
+        set_G_spec = 1;
+        set_G_gen = -100;
+        set_M_eff = 100;
+        set_G_end = log(4);
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_end_monomers_family_zero = 0;
+        set_end_monomers_family_one = 1;
+        set_template_length = 1;
+        set_transition_limit = 1000;
+
+
+        mt19937 gen(seed);
+
+        System *system = new System();
+
+        int count = 0;
+
+        vector<double> hist = {0, 0};
+        double previous_time = 0;
+
+        while (previous_time < transition_limit) {
+            system->chooseTransition(gen());
+            if (system->conglomerates[0]->polymers.size() == 2) {
+                //Now connected so we add time to unconnected list
+                hist[1] = hist[1] + system->simulation_time - previous_time;
+            } else if (system->conglomerates[0]->polymers.size() == 1) {
+                //Now unconnected so we add time to connected list
+                hist[0] = hist[0] + system->simulation_time - previous_time;
+            }
+            previous_time = system->simulation_time;
+            count++;
+        }
+
+        // Total transitions will increase with the binding rate and the transition limit but rates are 1/sec so no factor
+        Z.push_back((count-transition_limit*set_k0/0.625)/sqrt(transition_limit*set_k0/0.625));
+        //We have the two rates the same so the time spent should be equal
+        Z_connected.push_back((hist[0]-transition_limit*0.2)/sqrt(transition_limit*0.2));
+        Z_unconnected.push_back((hist[1]-transition_limit*0.8)/sqrt(transition_limit*0.8));
+    }
+
+    sum = accumulate(Z.begin(), Z.end(), 0.0);
+    mean = sum/Z.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the number of transitions in the simulation 0.1."<< endl;
+    }
+
+    sum = accumulate(Z_connected.begin(), Z_connected.end(), 0.0);
+    mean = sum/Z_connected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent connected in simulation 0.1." << endl;
+    }
+
+    sum = accumulate(Z_unconnected.begin(), Z_unconnected.end(), 0.0);
+    mean = sum/Z_unconnected.size();
+    if(abs(mean)>=1.65){
+        cout << "Confidence level lower than expected." << endl;
+        cout << "Z=" << mean << " for the time spent unconnected in simulation 0.1." << endl;
+    }
+
+    return true;
+}
+
+bool Tests::testCorrectMonomerBinding(){
+
+    set_volume = 1;
+    set_k0 = 1;
+    set_end_monomer = true;
+    set_parallel_growth = true;
+
+    for(int j=1; j<3;j++){
+        set_template_length = j;
+
+        set_monomers_family_zero = 0;
+        set_monomers_family_one = 0;
+        set_end_monomers_family_zero = 0;
+        set_end_monomers_family_one = 1;
+
+        System system = System();
+
+        if(system.end_external_rate != 1){
+            cout << "1" << endl;
+            cout << system.end_external_rate << endl;
+            return false;
+        }
+        if(system.external_connection_rate != 0){
+            cout << "2" << endl;
+            return false;
+        }
+        for(int i=0; i<system.transition_rates.size(); i++){
+            if(system.transition_rates[i]!=0){
+                cout << "3." << i << endl;
+                return false;
+            }
+        }
+
+        set_monomers_family_zero = 1;
+        set_monomers_family_one = 1;
+        set_end_monomers_family_zero = 1;
+        set_end_monomers_family_one = 0;
+
+        system.updateRates(0);
+
+        if(system.end_external_rate != 1){
+            cout << "4" << endl;
+            return false;
+        }
+
+        if(system.external_connection_rate != 0){
+            cout << "5.1" << endl;
+            return false;
+        }
+
+
+        for(int i=0; i<system.transition_rates.size(); i++){
+            if(system.transition_rates[i]!=0){
+                cout << "6." << i << endl;
+                return false;
+            }
+        }
+        system.deleteSystem();
+    }
+
+    return true;
+}
