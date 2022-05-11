@@ -263,14 +263,14 @@ int main(int argc, char *argv[]) {
         }
 
         //double length_count = 0; //Initialise total length count
-        polymer_count = 0;//Reset polymer count
+        double polymers_count = 0;
         for(int i=0; i<system->lengths.size(); i++){ //Loop all polymer lengths
-            polymer_count = polymer_count + system->lengths[i]; //Count how many polymers there are
+            polymers_count = polymers_count + system->lengths[i]; //Count how many polymers there are
             //length_count = length_count + system->lengths[i]*(i+1); //Count the lengths of all the polymers
         }
         double full_length_count = system->lengths[set_template_length-1];
-        double probability = full_length_count/polymer_count;
-        //double average_length = double(length_count) / double(polymer_count);
+        double probability = full_length_count/polymers_count;
+        //double average_length = double(length_count) / double(polymers_count);
 
         ofstream myfile;
         myfile.open("../LengthDist.csv", std::ios_base::app);
