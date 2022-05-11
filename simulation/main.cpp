@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
             polymer_count = polymer_count + system->lengths[i]; //Count how many polymers there are
             //length_count = length_count + system->lengths[i]*(i+1); //Count the lengths of all the polymers
         }
-        double full_length_count = system->length[set_template_length-1];
+        double full_length_count = system->lengths[set_template_length-1];
         double probability = full_length_count/polymer_count;
         //double average_length = double(length_count) / double(polymer_count);
 
