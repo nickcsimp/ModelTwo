@@ -237,22 +237,45 @@ int main(int argc, char *argv[]) {
     f_hist.close();
 
     if(set_make_length_distribution_plots) {
-        int full_length_count = system->lengths[system->lengths.size()-1]-1;
-        int length_count = 0; //Initialise total length count
+        system->lengths[0] = system->lengths[0] - set_monomers_family_zero-set_monomers_family_one;
+        if(set_end_monomer){
+            system->lengths[0] = system->lengths[0] - set_end_monomers_family_zero-set_end_monomers_family_one;
+        }
+        for(int i=0; i<lengths_at_half.size(); i++){
+            system->lengths[i] = system->lengths[i]-lengths_at_half[i];
+        }
+        int cong = -1;
+        for(int i=0; i<system->conglomerates.size(); i++){
+            for(int j=0; j<system->conglomerates[i]->polymers.size(); j++){
+                if(system->conglomerates[i]->polymers[j]->is_template){
+                    cong = i;
+                    //Found conglomerate with the template
+                    break;
+                }
+            }
+        }
+        for(int j=0; j<system->conglomerates[cong]->polymers.size(); j++){
+            system->lengths[system->conglomerates[cong]->polymers[j]->length-1]--;
+            //Remove all polymers from the length count from conglomerate cong
+            if(system->lengths[system->conglomerates[cong]->polymers[j]->length-1]<0){
+                system->lengths[system->conglomerates[cong]->polymers[j]->length-1]=0;
+            }
+        }
+
+        //double length_count = 0; //Initialise total length count
         polymer_count = 0;//Reset polymer count
         for(int i=0; i<system->lengths.size(); i++){ //Loop all polymer lengths
             polymer_count = polymer_count + system->lengths[i]; //Count how many polymers there are
-            length_count = length_count + system->lengths[i]*(i+1); //Count the lengths of all the polymers
+            //length_count = length_count + system->lengths[i]*(i+1); //Count the lengths of all the polymers
         }
-        polymer_count = polymer_count - set_monomers_family_zero-set_monomers_family_one - set_end_monomers_family_zero - set_end_monomers_family_one-1; // Remove initial monomers and template polymer
-        length_count = length_count - set_monomers_family_zero-set_monomers_family_one - set_end_monomers_family_zero - set_end_monomers_family_one-set_template_length; //Remove initial monomers and template polymer
-
-        double average_length = double(length_count) / double(polymer_count);
+        double full_length_count = system->length[set_template_length-1];
+        double probability = full_length_count/polymer_count;
+        //double average_length = double(length_count) / double(polymer_count);
 
         ofstream myfile;
         myfile.open("../LengthDist.csv", std::ios_base::app);
         if (myfile.is_open()) {
-            myfile << set_G_gen << ',' << set_G_bb << ',' << average_length << "\n";
+            myfile << set_G_end << ',' << set_G_spec << ',' << probability << "\n";
         }
         myfile.close();
     }
