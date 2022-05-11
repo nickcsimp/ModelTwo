@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
         }
 
         if(f_hist.is_open()){
-            f_hist << "\"Gbb=" << set_G_bb << ", Ggen="<< set_G_gen << ", Gspec="<< set_G_spec << ", Gend="<< set_G_end << ", End Monomer=" << set_end_monomer << ", Weak End=" << set_weakened_template_end << ", Rebinding=" << !set_no_rebinding << "\"\n";
+            f_hist << "\"Gspec="<< set_G_spec << ", Gend="<< set_G_end << ", Volume=" << set_volume << "\"\n";
             f_hist << '[';
             for(int i = 0; i< system->lengths.size()-1; i++){
                 f_hist << system->lengths[i] << ", ";
