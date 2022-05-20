@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
         }
 
         if(f_hist.is_open()){
-            f_hist << "\"Gspec="<< set_G_spec << ", Gend="<< set_G_end << ", Volume=" << set_volume << "\"\n";
+            f_hist << "\"Gend="<< set_G_end << "\"\n";
             f_hist << '[';
             for(int i = 0; i< system->lengths.size()-1; i++){
                 f_hist << system->lengths[i] << ", ";
