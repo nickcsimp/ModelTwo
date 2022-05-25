@@ -275,7 +275,7 @@ int main(int argc, char *argv[]) {
         ofstream myfile;
         myfile.open("../LengthDist.csv", std::ios_base::app);
         if (myfile.is_open()) {
-            myfile << set_G_end << ',' << set_G_spec << ',' << probability << "\n";
+            myfile << set_G_end << ',' << set_G_spec << ',' << set_G_gen << ',' << set_G_bb << ','<< probability << "\n";
         }
         myfile.close();
     }
